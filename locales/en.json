@@ -1,0 +1,19 @@
+{
+  "main": "Main",
+  "services": "Services",
+  "about": "About",
+  "login": "Login",
+  "user": "User Account",
+  "screen1": "ScreenOne",
+  "about_title": "About",
+  "change_language": "Switch Language",
+  "card_title": "Card Title",
+  "card_subtitle": "Card Subtitle",
+  "card_content_title": "Card Content Title",
+  "card_content_body": "Card Content Body",
+  "cancel": "Cancel",
+  "ok": "OK",
+  "language_switch": "Swtich language",
+  "first": "First",
+  "second": "Second"
+}
