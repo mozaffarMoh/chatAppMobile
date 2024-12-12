@@ -10,46 +10,57 @@ import {
 } from "react-native";
 import { Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
+import { router } from "expo-router";
+import LanguageToggle from "@/components/LanguageToggle";
 
-const Login = () => {
+const Register = () => {
   const { width, height } = useWindowDimensions();
+  const { t } = useTranslation();
   return (
     <SafeAreaView style={{ flexGrow: 1 }}>
       <ScrollView>
         <ImageBackground
-          source={require("../../../assets/images/login.jpg")} // Add your background image
-          style={[styles.background, { height: height - 70 }]}
+          source={require("../../assets/images/register.jpg")} // Add your background image
+          style={[styles.background, { height: height - 20 }]}
         >
           <View style={styles.container}>
-            <Text style={styles.heading}>Welcome Back!</Text>
-            <Text style={styles.subheading}>Please sign in to continue.</Text>
+            <Text style={styles.heading}>{t("auth.welcomeBack")}</Text>
+            <Text style={styles.subheading}>{t("auth.pleaseSignIn")}</Text>
 
             <TextInput
               style={styles.input}
-              placeholder="Email"
+              placeholder={t("auth.email")}
               placeholderTextColor="#A1A1A1"
               keyboardType="email-address"
               autoCapitalize="none"
             />
             <TextInput
               style={styles.input}
-              placeholder="Password"
+              placeholder={t("auth.password")}
               placeholderTextColor="#A1A1A1"
               secureTextEntry
             />
 
             <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>Login</Text>
+              <Text style={styles.buttonText}>{t("auth.login")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.forgotPassword}>
-              <Text style={styles.forgotText}>Forgot Password?</Text>
+              <Text style={styles.forgotText}>{t("auth.forgotPassword")}</Text>
             </TouchableOpacity>
 
             <Text style={styles.signup}>
-              Don't have an account?{" "}
-              <Text style={styles.signupLink}>Sign Up</Text>
+              {t("auth.dontHaveAccount")}
+              <Text
+                style={styles.signupLink}
+                onPress={() => router.push("/screens/Login")}
+              >
+                {t("auth.signUp")}
+              </Text>
             </Text>
+
+            <LanguageToggle />
           </View>
         </ImageBackground>
       </ScrollView>
@@ -125,4 +136,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Login;
+export default Register;

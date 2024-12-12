@@ -1,19 +1,16 @@
 {
-  "main": "الرئيسية",
-  "services": "الخدمات",
-  "about": "حول",
-  "login": "تسجيل الدخول",
-  "screen1": "الشاشة الأولى",
-  "user": "حساب المستخدم",
-  "about_title": "حول",
-  "change_language": "تغيير اللغة",
-  "card_title": "عنوان البطاقة",
-  "card_subtitle": "عنوان فرعي للبطاقة",
-  "card_content_title": "عنوان محتوى البطاقة",
-  "card_content_body": "محتوى البطاقة",
-  "cancel": "إلغاء",
-  "ok": "موافق",
-  "language_switch": "تغيير اللغة",
-  "first": "الأول",
-  "second": "القاني"
+  "auth": {
+    "welcomeBack": "مرحبًا بعودتك!",
+    "pleaseSignIn": "يرجى تسجيل الدخول للمتابعة.",
+    "login": "تسجيل الدخول",
+    "register": "تسجيل",
+    "dontHaveAccount": "ليس لديك حساب؟",
+    "haveAccount": "هل لديك حساب؟",
+    "forgotPassword": "هل نسيت كلمة المرور ؟",
+    "signUp": "إنشاء حساب",
+    "signIn": "تسجيل الدخول",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "username": "اسم المستخدم"
+  }
 }

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "test-latest-app",
-    "slug": "test-latest",
+    "name": "ChatApp",
+    "slug": "ChatApp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/favicon.png",
@@ -22,7 +22,13 @@
         "foregroundImage": "./assets/images/favicon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.feras123.testlatest"
+      "package": "com.feras123.testlatest",
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -100,14 +106,15 @@
         "origin": false
       },
       "eas": {
-        "projectId": "b1a0aff2-174b-40ef-ab38-b5733680629e"
+        "projectId": "220dc606-b80e-42a9-9809-8aa458e49ba6"
       }
     },
     "runtimeVersion": {
       "policy": "appVersion"
-    }, 
+    },
     "updates": {
       "url": "https://u.expo.dev/b1a0aff2-174b-40ef-ab38-b5733680629e"
-    }
+    },
+    "owner": "feras123"
   }
 }
