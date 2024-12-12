@@ -1,8 +1,3 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -10,9 +5,10 @@ import { useEffect } from "react";
 import "react-native-reanimated";
 import "@/i18n";
 import { SQLiteProvider } from "expo-sqlite";
-import { Stack } from "expo-router";
 import Register from "./screens/Register";
 import Login from "./screens/Login";
+import { Slot, Stack } from "expo-router";
+import FriendsList from "@/components/FriendsList";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -35,8 +31,8 @@ export default function RootLayout() {
   return (
     <SQLiteProvider databaseName="test.db">
       <StatusBar style="auto" />
-      <Register />
-      <Login />
+     {/*  <Slot /> */}
+      <FriendsList />
     </SQLiteProvider>
   );
 }

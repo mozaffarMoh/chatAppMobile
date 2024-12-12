@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Platform, useWindowDimensions } from "react-native";
 import {
   View,
@@ -10,12 +10,48 @@ import {
 } from "react-native";
 import { Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useTranslation } from "react-i18next";
 import LanguageToggle from "@/components/LanguageToggle";
+import { router } from "expo-router";
+import useRTL from "@/custom-hooks/useRTL";
+import Icon from "react-native-vector-icons/Ionicons"; // Import Ionicons for the eye icons
 
 const Login = () => {
   const { width, height } = useWindowDimensions();
-  const { t } = useTranslation();
+  const { t }: any = useRTL();
+
+  // Define your input fields dynamically
+  const [passwordVisible, setPasswordVisible] = useState(false); // State to toggle password visibility
+  const inputs: any = [
+    {
+      name: "email",
+      placeholder: t("auth.email"),
+      keyboardType: "email-address",
+      secureTextEntry: false,
+    },
+    {
+      name: "password",
+      placeholder: t("auth.password"),
+      keyboardType: "default",
+      secureTextEntry: !passwordVisible,
+      isPassword: true, // Custom flag to identify password inputs
+    },
+  ];
+
+  // State to store the values of the inputs
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+
+  // Handle input value change
+  const handleInputChange = (name: string, value: string) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
   return (
     <SafeAreaView style={{ flexGrow: 1 }}>
       <ScrollView>
@@ -27,31 +63,46 @@ const Login = () => {
             <Text style={styles.heading}>{t("auth.welcomeBack")}</Text>
             <Text style={styles.subheading}>{t("auth.pleaseSignIn")}</Text>
 
-            <TextInput
-              style={styles.input}
-              placeholder={t("auth.email")}
-              placeholderTextColor="#A1A1A1"
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            <TextInput
-              style={styles.input}
-              placeholder={t("auth.password")}
-              placeholderTextColor="#A1A1A1"
-              secureTextEntry
-            />
+            {/* Render inputs dynamically */}
+            {inputs.map((input: any) => (
+              <View key={input.name} style={styles.inputWrapper}>
+                <TextInput
+                  style={styles.input}
+                  placeholder={input.placeholder}
+                  placeholderTextColor="#eeeeee"
+                  keyboardType={input.keyboardType}
+                  secureTextEntry={input.secureTextEntry || false}
+                  value={formData[input.name as keyof typeof formData]}
+                  onChangeText={(value) => handleInputChange(input.name, value)}
+                />
+                {/* Add an eye icon for password fields */}
+                {input.isPassword && (
+                  <TouchableOpacity
+                    onPress={() => setPasswordVisible((prev) => !prev)}
+                    style={styles.iconContainer}
+                  >
+                    <Icon
+                      name={passwordVisible ? "eye-outline" : "eye-off-outline"} // Toggle eye icons
+                      size={24}
+                      color="#fff"
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
+            ))}
 
             <TouchableOpacity style={styles.button}>
               <Text style={styles.buttonText}>{t("auth.login")}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.forgotPassword}>
-              <Text style={styles.forgotText}>{t("auth.forgotPassword")}</Text>
-            </TouchableOpacity>
-
             <Text style={styles.signup}>
-            {t("auth.dontHaveAccount")}
-              <Text style={styles.signupLink}>{t("auth.signUp")}</Text>
+              {t("auth.dontHaveAccount")}{" "}
+              <Text
+                style={styles.signupLink}
+                onPress={() => router.push("/screens/Register")}
+              >
+                {t("auth.signUp")}
+              </Text>
             </Text>
 
             <LanguageToggle />
@@ -87,6 +138,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     marginBottom: 30,
   },
+  inputWrapper: {
+    position: "relative",
+    width: "100%",
+    marginBottom: 15,
+  },
   input: {
     width: "100%",
     height: 50,
@@ -94,9 +150,14 @@ const styles = StyleSheet.create({
     borderWidth: Platform.select({ android: 2 }),
     borderRadius: 25,
     paddingHorizontal: 15,
+    paddingRight: 45, // Add space for the icon
     color: "#fff",
-    marginBottom: 15,
     backgroundColor: "rgba(255, 255, 255, 0.3)",
+  },
+  iconContainer: {
+    position: "absolute",
+    right: 15, // Position the icon inside the TextInput
+    top: 12,
   },
   button: {
     backgroundColor: "#4CAF50", // Green color for the login button
@@ -111,14 +172,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
-  },
-  forgotPassword: {
-    marginBottom: 20,
-  },
-  forgotText: {
-    color: "#fff",
-    fontSize: 14,
-    textDecorationLine: "underline",
   },
   signup: {
     color: "#fff",

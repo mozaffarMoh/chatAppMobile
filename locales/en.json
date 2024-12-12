@@ -1,12 +1,16 @@
 {
   "auth": {
+    "welcome": "Create Account",
     "welcomeBack": "Welcome Back!",
     "pleaseSignIn": "Please sign in to continue.",
+    "happyToJoin": "We are very excited to join us!",
     "login": "Login",
-    "register": "Register",
+    "register": "Create",
+    "changePhoto": "Change Photo",
+    "uploadPhoto": "Upload Photo",
     "dontHaveAccount": "Don't have an account?",
     "haveAccount": "Have an account?",
-    "forgotPassword":"Forgot Password?",
+    "forgotPassword": "Forgot Password?",
     "signUp": "Sign Up",
     "signIn": "Sign In",
     "email": "Email",
