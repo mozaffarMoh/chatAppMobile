@@ -1,8 +1,14 @@
+import { primaryColor, secondaryColor } from "@/constants/colors";
 import { useEffect } from "react";
 import { Dimensions, StyleSheet } from "react-native";
 import { Snackbar } from "react-native-paper";
 
-const CustomSnackbar = ({ visible, onDismiss }: any) => {
+const CustomSnackbar = ({
+  visible = false,
+  onDismiss = () => {},
+  message,
+  type,
+}: any) => {
   const screenHeight = Dimensions.get("window").height;
 
   /* cancel snackbar after 3 seconds */
@@ -19,22 +25,30 @@ const CustomSnackbar = ({ visible, onDismiss }: any) => {
         clearTimeout(id);
       }
     };
-  }, [visible, onDismiss]);
+  }, [visible]);
+
+  const snackbarColor = () => {
+    if (type == "success") {
+      return "#6200ee";
+    } else {
+      return "#cc0000";
+    }
+  };
   return (
     <Snackbar
       visible={visible}
       onDismiss={onDismiss}
       action={{
-        icon: "close",
         label: "Close",
         onPress: onDismiss,
+        textColor: "white",
       }}
       style={{
-        bottom: screenHeight - 200, // Adjust vertical position
-        backgroundColor: "#6200ee",
+        bottom: 20, // Adjust vertical position
+        backgroundColor: snackbarColor(),
       }}
     >
-      Hey there! I'm a Snackbar.
+      {message}
     </Snackbar>
   );
 };

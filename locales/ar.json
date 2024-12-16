@@ -15,6 +15,29 @@
     "signIn": "تسجيل الدخول",
     "email": "البريد الإلكتروني",
     "password": "كلمة المرور",
+    "passwordConfirm": "تأكيد كلمة المرور",
     "username": "اسم المستخدم"
+  },
+  "header": {
+    "main": "الرئيسية",
+    "friendsList": "قائمة الأصدقاء",
+    "myAccount": "حسابي",
+    "logout": "تسجيل الخروج"
+  },
+  "buttons": {
+    "uploadPhoto": "تحميل صورة",
+    "update": "تحديث",
+    "deleteMyAccount": "حذف حسابي",
+    "remove": "إزالة"
+  },
+  "messages": {
+    "cantChangePassword": "لاتستطيع تغيير كلمة المرور عند استخدام حساب جيميل",
+    "successRegister": "اهلا وسهلا بك , تم انشاء الحساب بنجاح",
+    "successLogin": "اهلا بك مجددا تم تسجيل الدخول بنجاح"
+  },
+  "alerts": {
+    "confirmLogout": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد"
   }
 }

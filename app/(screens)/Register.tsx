@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Platform, useWindowDimensions } from "react-native";
 import {
   View,
@@ -9,25 +9,36 @@ import {
   ScrollView,
   Image,
 } from "react-native";
-import { Text } from "react-native-paper";
+import { ActivityIndicator, Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useNavigation } from "expo-router";
 import LanguageToggle from "@/components/LanguageToggle";
 import * as ImagePicker from "expo-image-picker";
 import { MaterialIcons } from "@expo/vector-icons";
 import Icon from "react-native-vector-icons/Ionicons"; // Import Ionicons for the eye icons
 import useRTL from "@/custom-hooks/useRTL";
+import { usePost } from "@/custom-hooks";
+import { endPoint } from "@/api/endPoint";
+import * as FileSystem from "expo-file-system";
+import CustomSnackbar from "@/components/CustomSnackbar";
 
 const Register = () => {
   const { width, height } = useWindowDimensions();
   const { t }: any = useRTL();
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+    });
+  }, [navigation]);
 
   const [formData, setFormData]: any = useState({
     email: "",
     password: "",
-    photo: null,
+    profilePhoto: "",
   });
-
+  const [successMessage, setSuccessMessage] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false); // State to toggle password visibility
 
   const fields = [
@@ -54,28 +65,56 @@ const Register = () => {
 
   const handlePhotoUpload = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
+      mediaTypes: "images", // Updated usage
+      allowsEditing: true,
       quality: 1,
     });
 
     if (!result.canceled) {
-      setFormData((prevData: any) => ({
-        ...prevData,
-        photo: result.assets[0].uri,
-      }));
+      const imageUri = result.assets[0].uri;
+
+      try {
+        // Read the image file and convert it to Base64
+        const base64 = await FileSystem.readAsStringAsync(imageUri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        setFormData((prevData: any) => ({
+          ...prevData,
+          profilePhoto: `data:image/jpeg;base64,${base64}`,
+        }));
+      } catch (error) {
+        console.error("Error reading file as Base64:", error);
+      }
     }
   };
 
   const handleDeletePhoto = () => {
     setFormData((prevData: any) => ({
       ...prevData,
-      photo: null,
+      photo: "",
     }));
   };
 
+  const [handleRegisterPost, loading, success, errorMessage] = usePost(
+    endPoint.register,
+    formData
+  );
+
+  useEffect(() => {
+    if (success) {
+      setSuccessMessage(t("messages.successRegister"));
+    }
+  }, [success]);
+
   return (
     <SafeAreaView style={{ flexGrow: 1 }}>
+      <CustomSnackbar visible={Boolean(errorMessage)} message={errorMessage} />
+      <CustomSnackbar
+        type="success"
+        visible={Boolean(successMessage)}
+        message={successMessage}
+        onDismiss={() => setSuccessMessage("")}
+      />
       <ScrollView>
         <ImageBackground
           source={require("../../assets/images/register.jpg")} // Add your background image
@@ -120,13 +159,13 @@ const Register = () => {
               onPress={handlePhotoUpload}
             >
               <Text style={styles.photoButtonText}>
-                {formData.photo ? t("auth.changePhoto") : t("auth.uploadPhoto")}
+                {formData.profilePhoto ? t("auth.changePhoto") : t("auth.uploadPhoto")}
               </Text>
             </TouchableOpacity>
-            {formData.photo && (
+            {formData.profilePhoto && (
               <>
                 <Image
-                  source={{ uri: formData.photo }}
+                  source={{ uri: formData.profilePhoto }}
                   style={styles.photoPreview}
                 />
                 <TouchableOpacity
@@ -139,8 +178,15 @@ const Register = () => {
             )}
 
             {/* Register Button */}
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>{t("auth.register")}</Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleRegisterPost}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" /> // Spinner inside button
+              ) : (
+                <Text style={styles.buttonText}>{t("auth.register")}</Text>
+              )}
             </TouchableOpacity>
 
             {/* Sign In Link */}
@@ -148,7 +194,7 @@ const Register = () => {
               {t("auth.haveAccount")}
               <Text
                 style={styles.signupLink}
-                onPress={() => router.push("/screens/Login")}
+                onPress={() => router.push("/(screens)/Login")}
               >
                 {" "}
                 {t("auth.signIn")}
@@ -198,6 +244,7 @@ const styles = StyleSheet.create({
     borderWidth: Platform.select({ android: 2 }),
     borderRadius: 25,
     paddingHorizontal: 15,
+    paddingRight: 45,
     color: "#fff",
     marginBottom: 15,
     backgroundColor: "rgba(255, 255, 255, 0.3)",

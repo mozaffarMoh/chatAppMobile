@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Platform, useWindowDimensions } from "react-native";
 import {
   View,
@@ -8,19 +8,25 @@ import {
   ImageBackground,
   ScrollView,
 } from "react-native";
-import { Text } from "react-native-paper";
+import { ActivityIndicator, Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LanguageToggle from "@/components/LanguageToggle";
-import { router } from "expo-router";
+import { router, useNavigation } from "expo-router";
 import useRTL from "@/custom-hooks/useRTL";
 import Icon from "react-native-vector-icons/Ionicons"; // Import Ionicons for the eye icons
+import { usePost } from "@/custom-hooks";
+import { endPoint } from "@/api/endPoint";
+import CustomSnackbar from "@/components/CustomSnackbar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Login = () => {
   const { width, height } = useWindowDimensions();
+  const navigation = useNavigation();
   const { t }: any = useRTL();
-
+  const [successMessage, setSuccessMessage] = useState("");
   // Define your input fields dynamically
   const [passwordVisible, setPasswordVisible] = useState(false); // State to toggle password visibility
+
   const inputs: any = [
     {
       name: "email",
@@ -39,10 +45,19 @@ const Login = () => {
 
   // State to store the values of the inputs
   const [formData, setFormData] = useState({
-    username: "",
     email: "",
     password: "",
   });
+
+  const [handleLoginPost, loading, success, errorMessage] = usePost(
+    endPoint.login,
+    formData
+  );
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: true,
+    });
+  }, [navigation]);
 
   // Handle input value change
   const handleInputChange = (name: string, value: string) => {
@@ -51,9 +66,21 @@ const Login = () => {
       [name]: value,
     }));
   };
+  useEffect(() => {
+    if (success) {
+      setSuccessMessage(t("messages.successLogin"));
+    }
+  }, [success]);
 
   return (
     <SafeAreaView style={{ flexGrow: 1 }}>
+      <CustomSnackbar visible={Boolean(errorMessage)} message={errorMessage} />
+      <CustomSnackbar
+        type="success"
+        visible={Boolean(successMessage)}
+        message={successMessage}
+        onDismiss={() => setSuccessMessage("")}
+      />
       <ScrollView>
         <ImageBackground
           source={require("../../assets/images/login.jpg")} // Add your background image
@@ -91,15 +118,19 @@ const Login = () => {
               </View>
             ))}
 
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>{t("auth.login")}</Text>
+            <TouchableOpacity style={styles.button} onPress={handleLoginPost}>
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" /> // Spinner inside button
+              ) : (
+                <Text style={styles.buttonText}>{t("auth.login")}</Text>
+              )}
             </TouchableOpacity>
 
             <Text style={styles.signup}>
               {t("auth.dontHaveAccount")}{" "}
               <Text
                 style={styles.signupLink}
-                onPress={() => router.push("/screens/Register")}
+                onPress={() => router.push("/(screens)/Register")}
               >
                 {t("auth.signUp")}
               </Text>

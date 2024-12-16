@@ -1,18 +1,19 @@
+import React from "react"; // Add this import
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "react-native-reanimated";
 import "@/i18n";
 import { SQLiteProvider } from "expo-sqlite";
-import Register from "./screens/Register";
-import Login from "./screens/Login";
-import { Slot, Stack } from "expo-router";
-import FriendsList from "@/components/FriendsList";
+import Drawer from "expo-router/drawer";
+import DrawerContent from "@/components/DraweContent";
+import LanguageToggle from "@/components/LanguageToggle";
 
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function RootLayout() {
+  const [isAuth, setIsAuth] = useState<boolean | null>(null);
   const [loaded] = useFonts({
     Bahij: require("../assets/fonts/Bahij.ttf"),
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
@@ -21,6 +22,7 @@ export default function RootLayout() {
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
+      setIsAuth(true);
     }
   }, [loaded]);
 
@@ -29,10 +31,22 @@ export default function RootLayout() {
   }
 
   return (
-    <SQLiteProvider databaseName="test.db">
-      <StatusBar style="auto" />
-     {/*  <Slot /> */}
-      <FriendsList />
+    <SQLiteProvider databaseName="data.db"> 
+      <StatusBar style="dark" />
+
+      <Drawer
+        screenOptions={{
+          headerShown: true,
+
+          headerStyle: {
+            backgroundColor: "#ff00ff", // Set the background color to green
+          },
+          headerRight: () => <LanguageToggle />,
+        }}
+        drawerContent={() => <DrawerContent />}
+      />
     </SQLiteProvider>
   );
 }
+
+export default RootLayout;

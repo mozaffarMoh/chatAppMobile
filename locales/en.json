@@ -15,6 +15,29 @@
     "signIn": "Sign In",
     "email": "Email",
     "password": "Password",
+    "passwordConfirm": "Confirm Password",
     "username": "Username"
+  },
+  "header": {
+    "main": "Main",
+    "friendsList": "Friends List",
+    "myAccount": "My Account",
+    "logout": "Logout"
+  },
+  "buttons": {
+    "uploadPhoto": "Upload Photo",
+    "update": "Update",
+    "deleteMyAccount": "Delete My Account",
+    "remove": "Remove"
+  },
+  "messages": {
+    "cantChangePassword": "You can't change your password when using a Gmail account",
+    "successRegister": "Register success, welcome!",
+    "successLogin": "Login Success, welcome!"
+  },
+  "alerts": {
+    "confirmLogout": "Are you sure you want to logout?",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
   }
 }

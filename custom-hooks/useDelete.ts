@@ -4,42 +4,29 @@ import { useRouter } from "expo-router";
 import baseApi from "../api/baseApi";
 import notAuth from "@/constants/Auth/notAuth";
 
-const usePost = <T,>(endPoint: string, body: object): any => {
+const useDelete = (endPoint: string): any => {
+  const router:any = useRouter();
   const notAuthenticated = notAuth();
-  const router = useRouter();
 
-  const [data, setData] = React.useState<T>({} as T);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [errorMessage, setErrorMessage] = React.useState<string>("");
-  const [success, setSuccess] = React.useState<boolean>(false);
   const [successMessage, setSuccessMessage] = React.useState<string>("");
 
-  const handlePost = async () => {
+  const handleDelete = async () => {
     setLoading(true);
-    setSuccess(false);
-
-
     try {
-      const res: any = await baseApi.post(endPoint, body);
-      setSuccessMessage(res?.data?.message);
+      await baseApi.delete(endPoint);
       setLoading(false);
-      setData(res.data);
-      setSuccess(true);
+      setSuccessMessage("Your account has been deleted successfully.");
 
-      setTimeout(() => {
-        setSuccess(false);
-      }, 2000);
-
-      // Check if current segment matches "login" or "sign-up"
-      if (endPoint.includes("login") || endPoint.includes("register")) {
-        setTimeout(async () => {
-          setSuccess(false);
-          await AsyncStorage.setItem("token", res.data.token);
-          await AsyncStorage.setItem("userId", res.data.userId);
-          router.replace("/"); // Navigate to home page
-        }, 3000);
-      }
-
+      setTimeout(async () => {
+        if (endPoint.includes("users")) {
+          await AsyncStorage.removeItem("token");
+          await AsyncStorage.removeItem("userId");
+          router.replace("/(screens)/Login"); // Navigate to login page
+        }
+        setSuccessMessage("");
+      }, 3000);
     } catch (err: any) {
       setLoading(false);
 
@@ -57,7 +44,7 @@ const usePost = <T,>(endPoint: string, body: object): any => {
       } else if (err?.response?.status === 500) {
         setErrorMessage("Server cannot respond, check internet connection");
       } else if (err?.response?.data) {
-        setErrorMessage(err.response.data);
+        setErrorMessage(err.response.data.error);
       }
 
       setTimeout(() => {
@@ -66,7 +53,7 @@ const usePost = <T,>(endPoint: string, body: object): any => {
     }
   };
 
-  return [handlePost, loading, success, errorMessage, data, successMessage, setData];
+  return [handleDelete, loading, errorMessage, successMessage];
 };
 
-export default usePost;
+export default useDelete;
