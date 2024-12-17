@@ -9,6 +9,8 @@ import { SQLiteProvider } from "expo-sqlite";
 import Drawer from "expo-router/drawer";
 import DrawerContent from "@/components/DraweContent";
 import LanguageToggle from "@/components/LanguageToggle";
+import { primaryColor } from "@/constants/colors";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -33,21 +35,22 @@ function RootLayout() {
   return (
     <SQLiteProvider databaseName="data.db">
       <StatusBar style="dark" />
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Drawer
+          screenOptions={{
+            headerShown: true,
 
-      <Drawer
-        screenOptions={{
-          headerShown: true,
-
-          headerStyle: {
-            backgroundColor: "#3a2", // Set the background color to green
-          },
-          drawerStyle: {
-            backgroundColor: "#3a2",
-          },
-          headerRight: () => <LanguageToggle />,
-        }}
-        drawerContent={() => <DrawerContent />}
-      />
+            headerStyle: {
+              backgroundColor: primaryColor, // Set the background color to green
+            },
+            drawerStyle: {
+              backgroundColor: primaryColor + "cc",
+            },
+            headerRight: () => <LanguageToggle />,
+          }}
+          drawerContent={() => <DrawerContent />}
+        />
+      </GestureHandlerRootView>
     </SQLiteProvider>
   );
 }

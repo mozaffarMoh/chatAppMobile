@@ -61,8 +61,9 @@ const usePost = <T,>(endPoint: string, body: object): any => {
       }
 
       setTimeout(() => {
-        errorMessage && setErrorMessage("");
-      }, 4000);
+        setErrorMessage("");
+      }, 3000);
+
     }
   };
 

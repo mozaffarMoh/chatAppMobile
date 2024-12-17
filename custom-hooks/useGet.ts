@@ -52,6 +52,10 @@ const useGet = (endPoint: string): any => {
                     setErrorMessage(message || "An error occurred.");
                 }
             }
+
+            setTimeout(() => {
+                setErrorMessage("");
+            }, 3000);
         })
     };
 

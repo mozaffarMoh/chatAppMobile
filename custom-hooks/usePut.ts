@@ -42,8 +42,8 @@ const usePut = (endPoint: string, body: any): any => {
             }
 
             setTimeout(() => {
-                errorMessage && setErrorMessage("");
-            }, 4000);
+                setErrorMessage("");
+              }, 3000);
         }
     };
 

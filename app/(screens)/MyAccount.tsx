@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,18 +7,22 @@ import {
   StyleSheet,
   TouchableOpacity,
   Platform,
+  Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import useRTL from "@/custom-hooks/useRTL";
 import Icon from "react-native-vector-icons/Ionicons";
-import { useNavigation } from "expo-router";
-import { usePut } from "@/custom-hooks";
+import { useFocusEffect, useNavigation } from "expo-router";
+import { useDelete, usePut } from "@/custom-hooks";
 import { endPoint } from "@/api/endPoint";
 import { getItemFromStorage } from "@/constants/getItemFromStorage";
 import CustomSnackbar from "@/components/CustomSnackbar";
 import { ActivityIndicator } from "react-native-paper";
 import { base64Image } from "@/constants/base64";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
+import { updateProfileSchema } from "@/constants/zodSchema/updateProfileSchema";
 
 const MyAccount = () => {
   const navigation = useNavigation();
@@ -39,6 +43,22 @@ const MyAccount = () => {
     endPoint.updateProfilePhoto + "?userId=" + myData?._id,
     formData
   );
+
+  const [
+    handelDeleteUser,
+    deleteUserLoading,
+    errorMessageDeleteUser,
+    successMessageDeleteUser,
+  ] = useDelete(endPoint.deleteUser + "?userId=" + myData?._id);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+  }: any = useForm({
+    resolver: zodResolver(updateProfileSchema(formData, t)), // Integrate Zod with React Hook Form
+  });
 
   const inputs: any = [
     {
@@ -106,29 +126,33 @@ const MyAccount = () => {
       ...prevData,
       profilePhoto: "",
     }));
-    setImageURI(null);
+    setImageURI(require("@/assets/images/avatar.png"));
   };
-
-  useEffect(() => {
-    getItemFromStorage("myData", setMyData);
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      getItemFromStorage("myData", setMyData);
+    }, [])
+  );
 
   /* initial the formData values from myData */
-  useEffect(() => {
-    if (myData) {
-      let imageURL = myData?.profilePhoto
-        ? { uri: myData?.profilePhoto }
-        : require("@/assets/images/avatar.png");
+  useFocusEffect(
+    useCallback(() => {
+      if (myData) {
+        let imageURL = myData?.profilePhoto
+          ? { uri: myData?.profilePhoto }
+          : require("@/assets/images/avatar.png");
 
-      setImageURI(imageURL);
-      setFormData({
-        username: myData?.username,
-        email: myData?.email,
-        oldPassword: "",
-        newPassword: "",
-      });
-    }
-  }, [myData]);
+        setImageURI(imageURL);
+        setFormData({
+          username: myData?.username,
+          email: myData?.email,
+          oldPassword: "",
+          newPassword: "",
+        });
+        setValue("username", myData?.username);
+      }
+    }, [myData])
+  );
 
   // Handle input value change
   const handleInputChange = (name: string, value: string) => {
@@ -146,7 +170,7 @@ const MyAccount = () => {
       setNewPasswordVisible((prev) => !prev);
     }
   };
- 
+
   /* success status */
   useEffect(() => {
     if (success) {
@@ -164,20 +188,39 @@ const MyAccount = () => {
       setFormData((prevData: any) => {
         return { ...prevData, oldPassword: "", newPassword: "" };
       });
- 
-      setTimeout(() => { 
+
+      setTimeout(() => {
         setSuccessMessage("");
       }, 3000);
     }
   }, [success]);
 
+  const handelDeleteAccount = () => {
+    Alert.alert(
+      t("alerts.deleteAccount"), // Alert title
+      t("alerts.confirmDeleteAccount"), // Alert message
+      [
+        { text: t("alerts.cancel"), style: "cancel" },
+        {
+          text: t("alerts.confirm"),
+          style: "destructive",
+          onPress: () => {
+            handelDeleteUser(); // Add actual logout logic here
+          },
+        },
+      ]
+    );
+  };
   return (
     <View style={styles.container}>
-      <CustomSnackbar visible={Boolean(errorMessage)} message={errorMessage} />
+      <CustomSnackbar
+        visible={Boolean(errorMessage) || Boolean(errorMessageDeleteUser)}
+        message={errorMessage || errorMessageDeleteUser}
+      />
       <CustomSnackbar
         type="success"
-        visible={Boolean(successMessage)}
-        message={successMessage}
+        visible={Boolean(successMessage) || Boolean(successMessageDeleteUser)}
+        message={successMessage || successMessageDeleteUser}
         onDismiss={() => setSuccessMessage("")}
       />
       {/* Profile Image */}
@@ -194,7 +237,7 @@ const MyAccount = () => {
         )}
       </TouchableOpacity>
       {/* Remove Photo Button */}
-      {imageURI && (
+      {imageURI != 29 && (
         <TouchableOpacity
           onPress={handleRemovePhoto}
           style={styles.removeButton}
@@ -207,28 +250,49 @@ const MyAccount = () => {
       {/* Name Input */}
       {inputs.map((input: any) => (
         <View key={input.name} style={styles.inputWrapper}>
-          <TextInput
-            style={styles.input}
-            placeholder={input.placeholder}
-            placeholderTextColor="#eeeeee"
-            keyboardType={input.keyboardType}
-            secureTextEntry={input.secureTextEntry || false}
-            value={formData[input.name as keyof typeof formData]}
-            onChangeText={(value) => handleInputChange(input.name, value)}
+          <Controller
+            name={input.name}
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <>
+                <TextInput
+                  style={[
+                    styles.input,
+                    errors[input.name] && styles.errorBorder, // Add red border if error
+                  ]}
+                  placeholder={input.placeholder}
+                  placeholderTextColor="#eeeeee"
+                  keyboardType={input.keyboardType}
+                  secureTextEntry={input.secureTextEntry || false}
+                  value={value}
+                  onChangeText={(value) => {
+                    handleInputChange(input.name, value);
+                    onChange(value);
+                  }}
+                />
+                {/* Add an eye icon for password fields */}
+                {input.isPassword && (
+                  <TouchableOpacity
+                    onPress={() => handleVisibility(input.name)}
+                    style={styles.iconContainer}
+                  >
+                    <Icon
+                      name={
+                        oldPasswordVisible ? "eye-outline" : "eye-off-outline"
+                      } // Toggle eye icons
+                      size={24}
+                      color="#fff"
+                    />
+                  </TouchableOpacity>
+                )}
+                {errors[input.name] && (
+                  <Text style={styles.errorText}>
+                    {errors[input.name]?.message}
+                  </Text>
+                )}
+              </>
+            )}
           />
-          {/* Add an eye icon for password fields */}
-          {input.isPassword && (
-            <TouchableOpacity
-              onPress={() => handleVisibility(input.name)}
-              style={styles.iconContainer}
-            >
-              <Icon
-                name={oldPasswordVisible ? "eye-outline" : "eye-off-outline"} // Toggle eye icons
-                size={24}
-                color="#fff"
-              />
-            </TouchableOpacity>
-          )}
         </View>
       ))}
       {/* Note */}
@@ -237,15 +301,27 @@ const MyAccount = () => {
       )}
       {/* Buttons */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={handleUpdateProfile}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleSubmit(handleUpdateProfile)}
+        >
           {loading ? (
             <ActivityIndicator size="small" color="#fff" /> // Spinner inside button
           ) : (
             <Text style={styles.buttonText}>{t("buttons.update")}</Text>
           )}
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.deleteButton]}>
-          <Text style={styles.buttonText}>{t("buttons.deleteMyAccount")}</Text>
+        <TouchableOpacity
+          style={[styles.button, styles.deleteButton]}
+          onPress={handelDeleteAccount}
+        >
+          {deleteUserLoading ? (
+            <ActivityIndicator size="small" color="#a00" /> // Spinner inside button
+          ) : (
+            <Text style={styles.buttonText}>
+              {t("buttons.deleteMyAccount")}
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>
@@ -295,6 +371,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
+  },
+  errorBorder: {
+    borderColor: "red",
+  },
+  errorText: {
+    color: "red",
+    fontSize: 12,
+    marginLeft: 5,
   },
   profilePhoto: {
     width: "100%",

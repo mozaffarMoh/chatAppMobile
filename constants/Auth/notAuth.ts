@@ -45,6 +45,7 @@ const notAuth = () => {
     const notAuthenticated = async () => {
         await AsyncStorage.removeItem("token");
         await AsyncStorage.removeItem("userId");
+        await AsyncStorage.removeItem("myData");
         router.push('/(screens)/Login')
     }
     return notAuthenticated

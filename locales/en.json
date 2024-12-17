@@ -39,8 +39,16 @@
     "successLogin": "Login Success, welcome!"
   },
   "alerts": {
-    "confirmLogout": "Are you sure you want to logout?",
+    "confirmLogout": "Are you sure you want to logout ?",
+    "deleteAccount": "Delete Account",
+    "confirmDeleteAccount": "Are you sure you want to delete your account",
     "cancel": "Cancel",
     "confirm": "Confirm"
+  },
+  "validation": {
+    "username3AtLeast": "Username must be at least 3 characters.",
+    "nonEmpty": "This field cannot be empty.",
+    "invalidEmail": "Please enter a valid email address.",
+    "passwordMinLength": "Password must be at least 5 characters."
   }
 }

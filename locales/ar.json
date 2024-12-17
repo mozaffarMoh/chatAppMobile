@@ -16,8 +16,8 @@
     "email": "البريد الإلكتروني",
     "password": "كلمة المرور",
     "passwordConfirm": "تأكيد كلمة المرور",
-    "oldPassword":"كلمة المرور القديمة",
-    "newPassword":"كلمة المرور الجديدة",
+    "oldPassword": "كلمة المرور القديمة",
+    "newPassword": "كلمة المرور الجديدة",
     "username": "اسم المستخدم"
   },
   "header": {
@@ -36,11 +36,19 @@
     "cantChangePassword": "لاتستطيع تغيير كلمة المرور عند استخدام حساب جيميل",
     "successRegister": "اهلا وسهلا بك , تم انشاء الحساب بنجاح",
     "successLogin": "اهلا بك مجددا تم تسجيل الدخول بنجاح",
-    "successUpdateProfile":"تم التعديل بنجاح"
+    "successUpdateProfile": "تم التعديل بنجاح"
   },
   "alerts": {
     "confirmLogout": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
+    "deleteAccount": "حذف الحساب",
+    "confirmDeleteAccount": "هل أنت متأكد أنك تريد حذف حسابك ؟",
     "cancel": "إلغاء",
     "confirm": "تأكيد"
+  },
+  "validation": {
+    "username3AtLeast": "يجب أن يحتوي اسم المستخدم على 3 أحرف على الأقل.",
+    "nonEmpty": "لا يمكن ترك هذا الحقل فارغًا.",
+    "invalidEmail": "يرجى إدخال عنوان بريد إلكتروني صحيح.",
+    "passwordMinLength": "يجب أن تحتوي كلمة المرور على 5 أحرف على الأقل."
   }
 }

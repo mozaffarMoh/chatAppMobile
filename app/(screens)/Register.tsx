@@ -21,25 +21,36 @@ import { usePost } from "@/custom-hooks";
 import { endPoint } from "@/api/endPoint";
 import * as FileSystem from "expo-file-system";
 import CustomSnackbar from "@/components/CustomSnackbar";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
+import { registerSchema } from "@/constants/zodSchema/registerSchema";
 
 const Register = () => {
   const { width, height } = useWindowDimensions();
   const { t }: any = useRTL();
   const navigation = useNavigation();
-
-  useEffect(() => {
-    navigation.setOptions({
-      headerShown: false,
-    });
-  }, [navigation]);
-
   const [formData, setFormData]: any = useState({
+    username: "",
     email: "",
     password: "",
     profilePhoto: "",
   });
   const [successMessage, setSuccessMessage] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false); // State to toggle password visibility
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  }: any = useForm({
+    resolver: zodResolver(registerSchema(t)), // Integrate Zod with React Hook Form
+    defaultValues: {
+      username: "",
+      email: "",
+      password: "",
+    },
+  });
 
   const fields = [
     {
@@ -58,6 +69,12 @@ const Register = () => {
       secureTextEntry: !passwordVisible, // Dynamically set secureTextEntry based on visibility
     },
   ];
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+    });
+  }, [navigation]);
 
   const handleInputChange = (name: any, value: any) => {
     setFormData((prevData: any) => ({ ...prevData, [name]: value }));
@@ -91,7 +108,7 @@ const Register = () => {
   const handleDeletePhoto = () => {
     setFormData((prevData: any) => ({
       ...prevData,
-      photo: "",
+      profilePhoto: "",
     }));
   };
 
@@ -103,6 +120,8 @@ const Register = () => {
   useEffect(() => {
     if (success) {
       setSuccessMessage(t("messages.successRegister"));
+      reset();
+      setFormData({ username: "", email: "", password: "", profilePhoto: "" });
     }
   }, [success]);
 
@@ -127,29 +146,52 @@ const Register = () => {
             {/* Dynamic Inputs */}
             {fields.map((field: any, index) => (
               <View key={index} style={styles.inputContainer}>
-                <TextInput
-                  style={styles.input}
-                  placeholder={field.placeholder}
-                  placeholderTextColor="#eeeeee"
-                  keyboardType={field.keyboardType || "default"}
-                  secureTextEntry={field.secureTextEntry || false}
-                  autoCapitalize="none"
-                  value={formData[field.name]}
-                  onChangeText={(value) => handleInputChange(field.name, value)}
+                <Controller
+                  name={field.name}
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <>
+                      <TextInput
+                        style={[
+                          styles.input,
+                          errors[field.name] && styles.errorBorder, // Add red border if error
+                        ]}
+                        placeholder={field.placeholder}
+                        placeholderTextColor="#eeeeee"
+                        keyboardType={field.keyboardType || "default"}
+                        secureTextEntry={field.secureTextEntry || false}
+                        autoCapitalize="none"
+                        value={value}
+                        onChangeText={(value) => {
+                          handleInputChange(field.name, value);
+                          onChange(value);
+                        }}
+                      />
+                      {/* Add the eye icon for password visibility toggle */}
+                      {field.name === "password" && (
+                        <TouchableOpacity
+                          style={styles.eyeIcon}
+                          onPress={() => setPasswordVisible(!passwordVisible)}
+                        >
+                          <Icon
+                            name={
+                              passwordVisible
+                                ? "eye-outline"
+                                : "eye-off-outline"
+                            } // Toggle eye icons
+                            size={24}
+                            color="#fff"
+                          />
+                        </TouchableOpacity>
+                      )}
+                      {errors[field.name] && (
+                        <Text style={styles.errorText}>
+                          {errors[field.name]?.message}
+                        </Text>
+                      )}
+                    </>
+                  )}
                 />
-                {/* Add the eye icon for password visibility toggle */}
-                {field.name === "password" && (
-                  <TouchableOpacity
-                    style={styles.eyeIcon}
-                    onPress={() => setPasswordVisible(!passwordVisible)}
-                  >
-                    <Icon
-                      name={passwordVisible ? "eye-outline" : "eye-off-outline"} // Toggle eye icons
-                      size={24}
-                      color="#fff"
-                    />
-                  </TouchableOpacity>
-                )}
               </View>
             ))}
 
@@ -159,7 +201,9 @@ const Register = () => {
               onPress={handlePhotoUpload}
             >
               <Text style={styles.photoButtonText}>
-                {formData.profilePhoto ? t("auth.changePhoto") : t("auth.uploadPhoto")}
+                {formData.profilePhoto
+                  ? t("auth.changePhoto")
+                  : t("auth.uploadPhoto")}
               </Text>
             </TouchableOpacity>
             {formData.profilePhoto && (
@@ -180,7 +224,7 @@ const Register = () => {
             {/* Register Button */}
             <TouchableOpacity
               style={styles.button}
-              onPress={handleRegisterPost}
+              onPress={handleSubmit(handleRegisterPost)}
             >
               {loading ? (
                 <ActivityIndicator size="small" color="#fff" /> // Spinner inside button
@@ -236,6 +280,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     width: "100%",
     position: "relative",
+    marginBottom: 15,
   },
   input: {
     width: "100%",
@@ -246,7 +291,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingRight: 45,
     color: "#fff",
-    marginBottom: 15,
     backgroundColor: "rgba(255, 255, 255, 0.3)",
   },
   eyeIcon: {
@@ -267,6 +311,14 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  errorBorder: {
+    borderColor: "red",
+  },
+  errorText: {
+    color: "red",
+    fontSize: 12,
+    marginLeft: 5,
   },
   photoButton: {
     backgroundColor: "#2196F3", // Blue color for the photo upload button

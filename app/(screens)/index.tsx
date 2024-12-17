@@ -1,6 +1,12 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useLayoutEffect,
+  useCallback,
+} from "react";
 import { View, StyleSheet, FlatList, ActivityIndicator } from "react-native";
-import { useNavigation } from "expo-router";
+import { router, useFocusEffect, useNavigation } from "expo-router";
 import useRTL from "@/custom-hooks/useRTL";
 import { TextInput } from "react-native-paper";
 import { useGet, usePost } from "@/custom-hooks";
@@ -19,7 +25,7 @@ const Main = () => {
   const [page, setPage]: any = useState(1);
 
   const navigation = useNavigation();
-  const [users, loading, getUsers, success] = useGet(
+  const [users, loading, getUsers, success, , setUsers] = useGet(
     endPoint.allUsers + userId + "?page=" + page
   );
   const [
@@ -40,15 +46,21 @@ const Main = () => {
   }, [navigation, t]);
 
   /* get user id from storage */
-  useEffect(() => {
-    getItemFromStorage("userId", setUserId);
-    getItemFromStorage("myData", setMyData);
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      !myData && setUsers([]);
+      // Fetch data when the screen is focused
+      getItemFromStorage("userId", setUserId);
+      getItemFromStorage("myData", setMyData);
+    }, [])
+  );
 
   /* get all users */
-  useEffect(() => {
-    if (userId) getUsers();
-  }, [userId, page]);
+  useFocusEffect(
+    useCallback(() => {
+      if (userId) getUsers();
+    }, [userId, page])
+  );
 
   /* store myData in storage if exist */
   useEffect(() => {
@@ -138,6 +150,7 @@ const styles = StyleSheet.create({
   flatList: {
     flex: 1,
     backgroundColor: "black", // Light background
+    paddingHorizontal: 10,
   },
   searchContainer: {
     padding: 10,

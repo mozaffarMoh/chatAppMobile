@@ -5,7 +5,7 @@ import baseApi from "../api/baseApi";
 import notAuth from "@/constants/Auth/notAuth";
 
 const useDelete = (endPoint: string): any => {
-  const router:any = useRouter();
+  const router: any = useRouter();
   const notAuthenticated = notAuth();
 
   const [loading, setLoading] = React.useState<boolean>(false);
@@ -21,9 +21,7 @@ const useDelete = (endPoint: string): any => {
 
       setTimeout(async () => {
         if (endPoint.includes("users")) {
-          await AsyncStorage.removeItem("token");
-          await AsyncStorage.removeItem("userId");
-          router.replace("/(screens)/Login"); // Navigate to login page
+          notAuthenticated()
         }
         setSuccessMessage("");
       }, 3000);
@@ -46,10 +44,9 @@ const useDelete = (endPoint: string): any => {
       } else if (err?.response?.data) {
         setErrorMessage(err.response.data.error);
       }
-
       setTimeout(() => {
-        errorMessage && setErrorMessage("");
-      }, 4000);
+        setErrorMessage("");
+      }, 3000);
     }
   };
 
