@@ -16,6 +16,8 @@
     "email": "البريد الإلكتروني",
     "password": "كلمة المرور",
     "passwordConfirm": "تأكيد كلمة المرور",
+    "oldPassword":"كلمة المرور القديمة",
+    "newPassword":"كلمة المرور الجديدة",
     "username": "اسم المستخدم"
   },
   "header": {
@@ -33,7 +35,8 @@
   "messages": {
     "cantChangePassword": "لاتستطيع تغيير كلمة المرور عند استخدام حساب جيميل",
     "successRegister": "اهلا وسهلا بك , تم انشاء الحساب بنجاح",
-    "successLogin": "اهلا بك مجددا تم تسجيل الدخول بنجاح"
+    "successLogin": "اهلا بك مجددا تم تسجيل الدخول بنجاح",
+    "successUpdateProfile":"تم التعديل بنجاح"
   },
   "alerts": {
     "confirmLogout": "هل أنت متأكد أنك تريد تسجيل الخروج؟",

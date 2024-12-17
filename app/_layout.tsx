@@ -31,7 +31,7 @@ function RootLayout() {
   }
 
   return (
-    <SQLiteProvider databaseName="data.db"> 
+    <SQLiteProvider databaseName="data.db">
       <StatusBar style="dark" />
 
       <Drawer
@@ -39,7 +39,10 @@ function RootLayout() {
           headerShown: true,
 
           headerStyle: {
-            backgroundColor: "#ff00ff", // Set the background color to green
+            backgroundColor: "#3a2", // Set the background color to green
+          },
+          drawerStyle: {
+            backgroundColor: "#3a2",
           },
           headerRight: () => <LanguageToggle />,
         }}

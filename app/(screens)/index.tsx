@@ -14,7 +14,7 @@ import { primaryColor } from "@/constants/colors";
 const Main = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { t }: any = useRTL();
-  const [myData, setMyData] = useState(null);
+  const [myData, setMyData]: any = useState(null);
   const [userId, setUserId]: any = useState("");
   const [page, setPage]: any = useState(1);
 
@@ -138,8 +138,6 @@ const styles = StyleSheet.create({
   flatList: {
     flex: 1,
     backgroundColor: "black", // Light background
-    marginTop: 15,
-    marginVertical: 20,
   },
   searchContainer: {
     padding: 10,

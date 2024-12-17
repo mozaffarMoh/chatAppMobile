@@ -15,21 +15,30 @@ import { useNavigation } from "expo-router";
 import { usePut } from "@/custom-hooks";
 import { endPoint } from "@/api/endPoint";
 import { getItemFromStorage } from "@/constants/getItemFromStorage";
+import CustomSnackbar from "@/components/CustomSnackbar";
+import { ActivityIndicator } from "react-native-paper";
+import { base64Image } from "@/constants/base64";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const MyAccount = () => {
-  const [name, setName] = useState("Mozaffar Mohammad");
   const navigation = useNavigation();
   const { t }: any = useRTL();
-  const [email] = useState("ferawwwess@gmail.com");
   const [myData, setMyData]: any = useState(null);
-  const [imageUri, setImageUri]: any = useState<string | null>(null);
-  const [passwordVisible, setPasswordVisible] = useState(false); // State to toggle password visibility
-  const [passwordConfirmVisible, setPasswordConfirmVisible] = useState(false); // State to toggle password visibility
-  const [formData, setFormData] = useState({
+  const [imageURI, setImageURI]: any = useState(null);
+  const [oldPasswordVisible, setOldPasswordVisible] = useState(false); // State to toggle password visibility
+  const [newPasswordVisible, setNewPasswordVisible] = useState(false); // State to toggle password visibility
+  const [successMessage, setSuccessMessage] = useState("");
+  const [formData, setFormData]: any = useState({
     username: "",
     email: "",
-    password: "",
+    profilePhoto: "",
+    oldPassword: "",
+    newPassword: "",
   });
+  const [handleUpdateProfile, loading, success, errorMessage] = usePut(
+    endPoint.updateProfilePhoto + "?userId=" + myData?._id,
+    formData
+  );
 
   const inputs: any = [
     {
@@ -41,17 +50,17 @@ const MyAccount = () => {
     ...(!myData?.isGoogle
       ? [
           {
-            name: "password",
-            placeholder: t("auth.password"),
+            name: "oldPassword",
+            placeholder: t("auth.oldPassword"),
             keyboardType: "default",
-            secureTextEntry: !passwordVisible,
+            secureTextEntry: !oldPasswordVisible,
             isPassword: true, // Custom flag to identify password inputs
           },
           {
-            name: "password-confirm",
-            placeholder: t("auth.passwordConfirm"),
+            name: "newPassword",
+            placeholder: t("auth.newPassword"),
             keyboardType: "default",
-            secureTextEntry: !passwordConfirmVisible,
+            secureTextEntry: !newPasswordVisible,
             isPassword: true, // Custom flag to identify password inputs
           },
         ]
@@ -74,65 +83,110 @@ const MyAccount = () => {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: "images",
       allowsEditing: false,
       aspect: [1, 1],
       quality: 1,
     });
 
     if (!result.canceled && result.assets?.[0]?.uri) {
-      setImageUri({ uri: result.assets[0].uri });
+      const uri = result.assets[0].uri;
+      let imageBase64 = await base64Image(uri);
+      setFormData((prevData: any) => ({
+        ...prevData,
+        profilePhoto: imageBase64,
+      }));
+      setImageURI({ uri });
     }
+  };
+
+  /* Remove the photo */
+  const handleRemovePhoto = () => {
+    setFormData((prevData: any) => ({
+      ...prevData,
+      profilePhoto: "",
+    }));
+    setImageURI(null);
   };
 
   useEffect(() => {
     getItemFromStorage("myData", setMyData);
   }, []);
 
+  /* initial the formData values from myData */
   useEffect(() => {
     if (myData) {
-      setFormData({
-        username: myData?.username,
-        email: myData?.email,
-        password: "",
-      });
       let imageURL = myData?.profilePhoto
         ? { uri: myData?.profilePhoto }
         : require("@/assets/images/avatar.png");
 
-      setImageUri(imageURL);
+      setImageURI(imageURL);
+      setFormData({
+        username: myData?.username,
+        email: myData?.email,
+        oldPassword: "",
+        newPassword: "",
+      });
     }
   }, [myData]);
 
-  /*   const [handleUpdateProfile, loading, success, errorMessage] = usePut(
-    endPoint.updateProfilePhoto + "?userId=" + userId,
-    formData
-  );
- */
   // Handle input value change
   const handleInputChange = (name: string, value: string) => {
-    setFormData((prevData) => ({
+    setFormData((prevData: any) => ({
       ...prevData,
       [name]: value,
     }));
   };
 
+  /* visisbility of password */
   const handleVisibility = (name: string) => {
-    if (name == "password") {
-      setPasswordVisible((prev) => !prev);
+    if (name == "oldPassword") {
+      setOldPasswordVisible((prev) => !prev);
     } else {
-      setPasswordConfirmVisible((prev) => !prev);
+      setNewPasswordVisible((prev) => !prev);
     }
   };
+ 
+  /* success status */
+  useEffect(() => {
+    if (success) {
+      setSuccessMessage(t("messages.successUpdateProfile"));
+      let myDataUpdated = {
+        ...myData,
+        ...(formData?.profilePhoto
+          ? { profilePhoto: formData?.profilePhoto }
+          : {}),
+        username: formData?.username,
+      };
+
+      AsyncStorage.setItem("myData", JSON.stringify(myDataUpdated));
+
+      setFormData((prevData: any) => {
+        return { ...prevData, oldPassword: "", newPassword: "" };
+      });
+ 
+      setTimeout(() => { 
+        setSuccessMessage("");
+      }, 3000);
+    }
+  }, [success]);
+
   return (
     <View style={styles.container}>
+      <CustomSnackbar visible={Boolean(errorMessage)} message={errorMessage} />
+      <CustomSnackbar
+        type="success"
+        visible={Boolean(successMessage)}
+        message={successMessage}
+        onDismiss={() => setSuccessMessage("")}
+      />
       {/* Profile Image */}
       <TouchableOpacity
         onPress={handleImageUpload}
         style={styles.imageContainer}
       >
-        {imageUri ? (
-          <Image source={imageUri} style={styles.profilePhoto} />
+        {imageURI ? (
+          <Image source={imageURI} style={styles.profilePhoto} />
         ) : (
           <View style={styles.placeholder}>
             <Text style={styles.uploadText}>{t("buttons.uploadPhoto")}</Text>
@@ -140,16 +194,16 @@ const MyAccount = () => {
         )}
       </TouchableOpacity>
       {/* Remove Photo Button */}
-      {imageUri && (
+      {imageURI && (
         <TouchableOpacity
-          onPress={() => setImageUri(null)}
+          onPress={handleRemovePhoto}
           style={styles.removeButton}
         >
           <Text style={styles.removeText}>{t("buttons.remove")}</Text>
         </TouchableOpacity>
       )}
       {/* Email */}
-      <Text style={styles.email}>{email}</Text>
+      <Text style={styles.email}>{formData?.email}</Text>
       {/* Name Input */}
       {inputs.map((input: any) => (
         <View key={input.name} style={styles.inputWrapper}>
@@ -169,7 +223,7 @@ const MyAccount = () => {
               style={styles.iconContainer}
             >
               <Icon
-                name={passwordVisible ? "eye-outline" : "eye-off-outline"} // Toggle eye icons
+                name={oldPasswordVisible ? "eye-outline" : "eye-off-outline"} // Toggle eye icons
                 size={24}
                 color="#fff"
               />
@@ -183,8 +237,12 @@ const MyAccount = () => {
       )}
       {/* Buttons */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>{t("buttons.update")}</Text>
+        <TouchableOpacity style={styles.button} onPress={handleUpdateProfile}>
+          {loading ? (
+            <ActivityIndicator size="small" color="#fff" /> // Spinner inside button
+          ) : (
+            <Text style={styles.buttonText}>{t("buttons.update")}</Text>
+          )}
         </TouchableOpacity>
         <TouchableOpacity style={[styles.button, styles.deleteButton]}>
           <Text style={styles.buttonText}>{t("buttons.deleteMyAccount")}</Text>
@@ -197,7 +255,7 @@ const MyAccount = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#5ff",
+    backgroundColor: "#312",
     alignItems: "center",
     justifyContent: "center",
     padding: 20,

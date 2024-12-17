@@ -62,8 +62,11 @@ export default function DrawerContent() {
             style={styles.navItem}
             onPress={() => handleNavigate(item.route)}
           >
-            {!item?.route && logoutLoading ? <ActivityIndicator /> :
-            <Text style={styles.navText}>{item.name}</Text>}
+            {!item?.route && logoutLoading ? (
+              <ActivityIndicator />
+            ) : (
+              <Text style={styles.navText}>{item.name}</Text>
+            )}
           </TouchableOpacity>
         ))}
       </View>

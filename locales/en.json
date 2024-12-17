@@ -15,8 +15,11 @@
     "signIn": "Sign In",
     "email": "Email",
     "password": "Password",
+    "oldPassword": "Old Password",
+    "newPassword": "New Password",
     "passwordConfirm": "Confirm Password",
-    "username": "Username"
+    "username": "Username",
+    "successUpdateProfile": "Update success"
   },
   "header": {
     "main": "Main",
