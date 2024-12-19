@@ -6,7 +6,7 @@ import React, {
   useCallback,
 } from "react";
 import { View, StyleSheet, FlatList, ActivityIndicator } from "react-native";
-import { router, useFocusEffect, useNavigation } from "expo-router";
+import { Redirect, router, useFocusEffect, useNavigation } from "expo-router";
 import useRTL from "@/custom-hooks/useRTL";
 import { TextInput } from "react-native-paper";
 import { useGet, usePost } from "@/custom-hooks";
@@ -15,15 +15,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getItemFromStorage } from "@/constants/getItemFromStorage";
 import { UsersItem } from "@/components/UsersItem";
 import { Ionicons } from "@expo/vector-icons";
-import { primaryColor } from "@/constants/colors";
+import { primaryColor, secondaryColor } from "@/constants/colors";
+import { useAuth } from "@/components/AuthProviders";
 
 const Main = () => {
+  const { isAuth }: any = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const { t }: any = useRTL();
   const [myData, setMyData]: any = useState(null);
   const [userId, setUserId]: any = useState("");
   const [page, setPage]: any = useState(1);
-
   const navigation = useNavigation();
   const [users, loading, getUsers, success, , setUsers] = useGet(
     endPoint.allUsers + userId + "?page=" + page
@@ -132,17 +133,28 @@ const Main = () => {
   };
 
   let currentArray = filteredUsers?.users || users?.users || [];
-  return (
-    <FlatList
-      data={currentArray}
-      renderItem={UsersItem}
-      keyExtractor={(item: any) => item._id}
-      style={styles.flatList}
-      ListHeaderComponent={ListHeaderComponent}
-      onEndReached={handleLoadMore}
-      ListFooterComponent={ListFooterComponent}
-    />
-  );
+  if (isAuth === false) {
+    return <Redirect href="/(screens)/Login" />;
+  } else if (isAuth === null) {
+    <ActivityIndicator
+      animating={true}
+      color={secondaryColor}
+      size={60}
+      style={{ position: "absolute", top: "45%", left: "43%" }}
+    />;
+  } else {
+    return (
+      <FlatList
+        data={currentArray}
+        renderItem={UsersItem}
+        keyExtractor={(item: any) => item._id}
+        style={styles.flatList}
+        ListHeaderComponent={ListHeaderComponent}
+        onEndReached={handleLoadMore}
+        ListFooterComponent={ListFooterComponent}
+      />
+    );
+  }
 };
 
 // Styles for the component

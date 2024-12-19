@@ -37,15 +37,18 @@ const notAuth = () => {
 
 export default notAuth; */
 
+import { useAuth } from "@/components/AuthProviders";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 
 
 const notAuth = () => {
+    const { isAuth, setIsAuth }: any = useAuth();
     const notAuthenticated = async () => {
         await AsyncStorage.removeItem("token");
         await AsyncStorage.removeItem("userId");
         await AsyncStorage.removeItem("myData");
+        setIsAuth(false)
         router.push('/(screens)/Login')
     }
     return notAuthenticated

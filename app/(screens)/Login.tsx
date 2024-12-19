@@ -11,7 +11,7 @@ import {
 import { ActivityIndicator, Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LanguageToggle from "@/components/LanguageToggle";
-import { router, useNavigation } from "expo-router";
+import { Redirect, router, Stack, useNavigation } from "expo-router";
 import useRTL from "@/custom-hooks/useRTL";
 import Icon from "react-native-vector-icons/Ionicons"; // Import Ionicons for the eye icons
 import { usePost } from "@/custom-hooks";
@@ -22,14 +22,19 @@ import { loginSchema } from "@/constants/zodSchema/loginSchema";
 import { zodResolver } from "@hookform/resolvers/zod"; // Import Zod resolver for React Hook Form
 import { useForm, Controller } from "react-hook-form"; // Import React Hook Form
 import { getItemFromStorage } from "@/constants/getItemFromStorage";
+import { useAuthRequest } from "expo-auth-session/providers/google";
+import { makeRedirectUri } from "expo-auth-session";
+import { useAuth } from "@/components/AuthProviders";
 
 const Login = () => {
+  const { isAuth }: any = useAuth();
   const { width, height } = useWindowDimensions();
   const navigation = useNavigation();
   const { t }: any = useRTL();
   const [successMessage, setSuccessMessage] = useState("");
   // Define your input fields dynamically
   const [passwordVisible, setPasswordVisible] = useState(false); // State to toggle password visibility
+  const [formData, setFormData]: any = useState(null);
 
   const inputs: any = [
     {
@@ -47,14 +52,6 @@ const Login = () => {
     },
   ];
 
-  // State to store the values of the inputs
-  const [formData, setFormData]: any = useState(null);
-
-  const [handleLoginPost, loading, success, errorMessage] = usePost(
-    endPoint.login,
-    formData
-  );
-
   const {
     control,
     handleSubmit,
@@ -69,9 +66,14 @@ const Login = () => {
     },
   });
 
+  const [handleLoginPost, loading, success, errorMessage] = usePost(
+    endPoint.login,
+    formData
+  );
+
   useEffect(() => {
     navigation.setOptions({
-      headerShown: true,
+      headerShown: false,
     });
   }, [navigation]);
 
@@ -92,98 +94,151 @@ const Login = () => {
     }
   }, [success]);
 
-  return (
-    <SafeAreaView style={{ flexGrow: 1 }}>
-      <CustomSnackbar visible={Boolean(errorMessage)} message={errorMessage} />
-      <CustomSnackbar
-        type="success"
-        visible={Boolean(successMessage)}
-        message={successMessage}
-        onDismiss={() => setSuccessMessage("")}
-      />
-      <ScrollView>
-        <ImageBackground
-          source={require("../../assets/images/login.jpg")} // Add your background image
-          style={[styles.background, { height: height - 20 }]}
-        >
-          <View style={styles.container}>
-            <Text style={styles.heading}>{t("auth.welcomeBack")}</Text>
-            <Text style={styles.subheading}>{t("auth.pleaseSignIn")}</Text>
+  const [gmailToken, setGmailToken] = React.useState<object | any>(null);
+  const [
+    handleRegisterWithGoogle,
+    googleLoading,
+    googleSuccess,
+    ,
+    ,
+    googleSuccessMessage,
+  ] = usePost(endPoint.registerGoogle, gmailToken);
+  const [request, response, promptAsync] = useAuthRequest({
+    clientId: Platform.select({
+      ios: "202948221783-slvgg9nuv7dl6103vgpop136eej0rnkf.apps.googleusercontent.com",
+      android:
+        "202948221783-slvgg9nuv7dl6103vgpop136eej0rnkf.apps.googleusercontent.com",
+      default:
+        "202948221783-m98hb00hfk2d0v73bqrrev24f0ubui74.apps.googleusercontent.com",
+    }),
+    redirectUri: makeRedirectUri({
+      scheme: "myapp",
+    }),
+  });
 
-            {/* Render inputs dynamically */}
-            {inputs.map((input: any) => (
-              <View key={input.name} style={styles.inputWrapper}>
-                <Controller
-                  name={input.name}
-                  control={control}
-                  render={({ field: { onChange, value } }) => (
-                    <>
-                      <TextInput
-                        style={[
-                          styles.input,
-                          errors[input.name] && styles.errorBorder, // Add red border if error
-                        ]}
-                        placeholder={input.placeholder}
-                        placeholderTextColor="#eeeeee"
-                        keyboardType={input.keyboardType}
-                        secureTextEntry={input.secureTextEntry || false}
-                        value={value}
-                        onChangeText={onChange}
-                      />
-                      {input.isPassword && (
-                        <TouchableOpacity
-                          onPress={() => setPasswordVisible((prev) => !prev)}
-                          style={styles.iconContainer}
-                        >
-                          <Icon
-                            name={
-                              passwordVisible
-                                ? "eye-outline"
-                                : "eye-off-outline"
-                            }
-                            size={24}
-                            color="#fff"
-                          />
-                        </TouchableOpacity>
-                      )}
-                      {errors[input.name] && (
-                        <Text style={styles.errorText}>
-                          {errors[input.name]?.message}
-                        </Text>
-                      )}
-                    </>
-                  )}
-                />
-              </View>
-            ))}
+  useEffect(() => {
+    if (response?.type === "success") {
+      const { authentication } = response;
+      if (authentication) {
+        setGmailToken({ token: authentication.accessToken });
+        handleRegisterWithGoogle();
+      }
+    }
+  }, [response]);
 
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handleSubmit(onSubmit)}
-            >
-              {loading ? (
-                <ActivityIndicator size="small" color="#fff" /> // Spinner inside button
-              ) : (
-                <Text style={styles.buttonText}>{t("auth.login")}</Text>
-              )}
-            </TouchableOpacity>
+  if (isAuth === true) {
+    return <Redirect href="/" />;
+  } else {
+    return (
+      <SafeAreaView style={{ flexGrow: 1 }}>
+        <CustomSnackbar
+          visible={Boolean(errorMessage)}
+          message={errorMessage}
+        />
+        <CustomSnackbar
+          type="success"
+          visible={Boolean(successMessage)}
+          message={successMessage}
+          onDismiss={() => setSuccessMessage("")}
+        />
+        <ScrollView>
+          <ImageBackground
+            source={require("../../assets/images/login.jpg")} // Add your background image
+            style={[styles.background, { height: height - 20 }]}
+          >
+            <View style={styles.container}>
+              <Text style={styles.heading}>{t("auth.welcomeBack")}</Text>
+              <Text style={styles.subheading}>{t("auth.pleaseSignIn")}</Text>
 
-            <Text style={styles.signup}>
-              {t("auth.dontHaveAccount")}{" "}
-              <Text
-                style={styles.signupLink}
-                onPress={() => router.push("/(screens)/Register")}
+              {/* Render inputs dynamically */}
+              {inputs.map((input: any) => (
+                <View key={input.name} style={styles.inputWrapper}>
+                  <Controller
+                    name={input.name}
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <>
+                        <TextInput
+                          style={[
+                            styles.input,
+                            errors[input.name] && styles.errorBorder, // Add red border if error
+                          ]}
+                          placeholder={input.placeholder}
+                          placeholderTextColor="#eeeeee"
+                          keyboardType={input.keyboardType}
+                          secureTextEntry={input.secureTextEntry || false}
+                          value={value}
+                          onChangeText={onChange}
+                        />
+                        {input.isPassword && (
+                          <TouchableOpacity
+                            onPress={() => setPasswordVisible((prev) => !prev)}
+                            style={styles.iconContainer}
+                          >
+                            <Icon
+                              name={
+                                passwordVisible
+                                  ? "eye-outline"
+                                  : "eye-off-outline"
+                              }
+                              size={24}
+                              color="#fff"
+                            />
+                          </TouchableOpacity>
+                        )}
+                        {errors[input.name] && (
+                          <Text style={styles.errorText}>
+                            {errors[input.name]?.message}
+                          </Text>
+                        )}
+                      </>
+                    )}
+                  />
+                </View>
+              ))}
+
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleSubmit(onSubmit)}
               >
-                {t("auth.signUp")}
-              </Text>
-            </Text>
+                {loading ? (
+                  <ActivityIndicator size="small" color="#fff" /> // Spinner inside button
+                ) : (
+                  <Text style={styles.buttonText}>{t("auth.login")}</Text>
+                )}
+              </TouchableOpacity>
 
-            <LanguageToggle />
-          </View>
-        </ImageBackground>
-      </ScrollView>
-    </SafeAreaView>
-  );
+              <Text style={styles.signup}>
+                {t("auth.dontHaveAccount")}{" "}
+                <Text
+                  style={styles.signupLink}
+                  onPress={() => router.push("/(screens)/Register")}
+                >
+                  {t("auth.signUp")}
+                </Text>
+              </Text>
+
+              <TouchableOpacity
+                style={styles.buttonGoogle} // Google red color
+                onPress={() => promptAsync()}
+                disabled={!request}
+              >
+                {googleLoading ? (
+                  <ActivityIndicator size="small" color="#aaa" />
+                ) : (
+                  <Text style={styles.buttonGoogleText}>
+                    {t("auth.loginWithGoogle")}
+                  </Text>
+                )}
+              </TouchableOpacity>
+
+              <LanguageToggle />
+            </View>
+          </ImageBackground>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
 };
 
 const styles = StyleSheet.create({
@@ -254,6 +309,20 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  buttonGoogle: {
+    backgroundColor: "#fff",
+    borderRadius: 7,
+    marginTop: 10,
+    width: "80%",
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  buttonGoogleText: {
+    textAlign: "center",
+    color: "#222",
+    fontWeight: "400",
   },
   signup: {
     color: "#fff",

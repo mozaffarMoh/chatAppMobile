@@ -11,11 +11,13 @@ import DrawerContent from "@/components/DraweContent";
 import LanguageToggle from "@/components/LanguageToggle";
 import { primaryColor } from "@/constants/colors";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import Main from "./main";
+import { Slot, Stack } from "expo-router";
+import { AuthProvider } from "@/components/AuthProviders";
 
 SplashScreen.preventAutoHideAsync();
 
 function RootLayout() {
-  const [isAuth, setIsAuth] = useState<boolean | null>(null);
   const [loaded] = useFonts({
     Bahij: require("../assets/fonts/Bahij.ttf"),
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
@@ -24,7 +26,6 @@ function RootLayout() {
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
-      setIsAuth(true);
     }
   }, [loaded]);
 
@@ -33,25 +34,12 @@ function RootLayout() {
   }
 
   return (
-    <SQLiteProvider databaseName="data.db">
-      <StatusBar style="dark" />
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <Drawer
-          screenOptions={{
-            headerShown: true,
-
-            headerStyle: {
-              backgroundColor: primaryColor, // Set the background color to green
-            },
-            drawerStyle: {
-              backgroundColor: primaryColor + "cc",
-            },
-            headerRight: () => <LanguageToggle />,
-          }}
-          drawerContent={() => <DrawerContent />}
-        />
-      </GestureHandlerRootView>
-    </SQLiteProvider>
+    <AuthProvider>
+      <SQLiteProvider databaseName="data.db">
+        <StatusBar style="dark" />
+        <Main />
+      </SQLiteProvider>
+    </AuthProvider>
   );
 }
 

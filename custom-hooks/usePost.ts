@@ -3,11 +3,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import baseApi from "../api/baseApi";
 import notAuth from "@/constants/Auth/notAuth";
+import { useAuth } from "@/components/AuthProviders";
 
 const usePost = <T,>(endPoint: string, body: object): any => {
   const notAuthenticated = notAuth();
   const router = useRouter();
-
+  const { isAuth, setIsAuth }: any = useAuth();
   const [data, setData] = React.useState<T>({} as T);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [errorMessage, setErrorMessage] = React.useState<string>("");
@@ -36,6 +37,7 @@ const usePost = <T,>(endPoint: string, body: object): any => {
           setSuccess(false);
           await AsyncStorage.setItem("token", res.data.token);
           await AsyncStorage.setItem("userId", res.data.userId);
+          setIsAuth(true)
           router.replace("/"); // Navigate to home page
         }, 3000);
       }

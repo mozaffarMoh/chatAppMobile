@@ -44,7 +44,7 @@ export default function DrawerContent() {
         ]
       );
     } else {
-      router.replace(path);
+      router.push(path);
     }
   };
 

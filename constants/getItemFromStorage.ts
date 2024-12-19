@@ -8,5 +8,6 @@ export const getItemFromStorage = async (name: string, setItem: any) => {
         setItem(value);
     } catch (error) {
         console.log("Error fetching data from AsyncStorage", error);
+        setItem(null)
     }
 };

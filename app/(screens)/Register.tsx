@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useNavigation } from "expo-router";
+import { Redirect, router, useNavigation } from "expo-router";
 import LanguageToggle from "@/components/LanguageToggle";
 import * as ImagePicker from "expo-image-picker";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -24,8 +24,10 @@ import CustomSnackbar from "@/components/CustomSnackbar";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { registerSchema } from "@/constants/zodSchema/registerSchema";
+import { useAuth } from "@/components/AuthProviders";
 
 const Register = () => {
+  const { isAuth }: any = useAuth();
   const { width, height } = useWindowDimensions();
   const { t }: any = useRTL();
   const navigation = useNavigation();
@@ -125,132 +127,139 @@ const Register = () => {
     }
   }, [success]);
 
-  return (
-    <SafeAreaView style={{ flexGrow: 1 }}>
-      <CustomSnackbar visible={Boolean(errorMessage)} message={errorMessage} />
-      <CustomSnackbar
-        type="success"
-        visible={Boolean(successMessage)}
-        message={successMessage}
-        onDismiss={() => setSuccessMessage("")}
-      />
-      <ScrollView>
-        <ImageBackground
-          source={require("../../assets/images/register.jpg")} // Add your background image
-          style={[styles.background, { height: height - 20 }]}
-        >
-          <View style={styles.container}>
-            <Text style={styles.heading}>{t("auth.welcome")}</Text>
-            <Text style={styles.subheading}>{t("auth.happyToJoin")}</Text>
+  if (isAuth === true) {
+    return <Redirect href="/" />;
+  } else {
+    return (
+      <SafeAreaView style={{ flexGrow: 1 }}>
+        <CustomSnackbar
+          visible={Boolean(errorMessage)}
+          message={errorMessage}
+        />
+        <CustomSnackbar
+          type="success"
+          visible={Boolean(successMessage)}
+          message={successMessage}
+          onDismiss={() => setSuccessMessage("")}
+        />
+        <ScrollView>
+          <ImageBackground
+            source={require("../../assets/images/register.jpg")} // Add your background image
+            style={[styles.background, { height: height - 20 }]}
+          >
+            <View style={styles.container}>
+              <Text style={styles.heading}>{t("auth.welcome")}</Text>
+              <Text style={styles.subheading}>{t("auth.happyToJoin")}</Text>
 
-            {/* Dynamic Inputs */}
-            {fields.map((field: any, index) => (
-              <View key={index} style={styles.inputContainer}>
-                <Controller
-                  name={field.name}
-                  control={control}
-                  render={({ field: { onChange, value } }) => (
-                    <>
-                      <TextInput
-                        style={[
-                          styles.input,
-                          errors[field.name] && styles.errorBorder, // Add red border if error
-                        ]}
-                        placeholder={field.placeholder}
-                        placeholderTextColor="#eeeeee"
-                        keyboardType={field.keyboardType || "default"}
-                        secureTextEntry={field.secureTextEntry || false}
-                        autoCapitalize="none"
-                        value={value}
-                        onChangeText={(value) => {
-                          handleInputChange(field.name, value);
-                          onChange(value);
-                        }}
-                      />
-                      {/* Add the eye icon for password visibility toggle */}
-                      {field.name === "password" && (
-                        <TouchableOpacity
-                          style={styles.eyeIcon}
-                          onPress={() => setPasswordVisible(!passwordVisible)}
-                        >
-                          <Icon
-                            name={
-                              passwordVisible
-                                ? "eye-outline"
-                                : "eye-off-outline"
-                            } // Toggle eye icons
-                            size={24}
-                            color="#fff"
-                          />
-                        </TouchableOpacity>
-                      )}
-                      {errors[field.name] && (
-                        <Text style={styles.errorText}>
-                          {errors[field.name]?.message}
-                        </Text>
-                      )}
-                    </>
-                  )}
-                />
-              </View>
-            ))}
+              {/* Dynamic Inputs */}
+              {fields.map((field: any, index) => (
+                <View key={index} style={styles.inputContainer}>
+                  <Controller
+                    name={field.name}
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <>
+                        <TextInput
+                          style={[
+                            styles.input,
+                            errors[field.name] && styles.errorBorder, // Add red border if error
+                          ]}
+                          placeholder={field.placeholder}
+                          placeholderTextColor="#eeeeee"
+                          keyboardType={field.keyboardType || "default"}
+                          secureTextEntry={field.secureTextEntry || false}
+                          autoCapitalize="none"
+                          value={value}
+                          onChangeText={(value) => {
+                            handleInputChange(field.name, value);
+                            onChange(value);
+                          }}
+                        />
+                        {/* Add the eye icon for password visibility toggle */}
+                        {field.name === "password" && (
+                          <TouchableOpacity
+                            style={styles.eyeIcon}
+                            onPress={() => setPasswordVisible(!passwordVisible)}
+                          >
+                            <Icon
+                              name={
+                                passwordVisible
+                                  ? "eye-outline"
+                                  : "eye-off-outline"
+                              } // Toggle eye icons
+                              size={24}
+                              color="#fff"
+                            />
+                          </TouchableOpacity>
+                        )}
+                        {errors[field.name] && (
+                          <Text style={styles.errorText}>
+                            {errors[field.name]?.message}
+                          </Text>
+                        )}
+                      </>
+                    )}
+                  />
+                </View>
+              ))}
 
-            {/* Photo Upload */}
-            <TouchableOpacity
-              style={styles.photoButton}
-              onPress={handlePhotoUpload}
-            >
-              <Text style={styles.photoButtonText}>
-                {formData.profilePhoto
-                  ? t("auth.changePhoto")
-                  : t("auth.uploadPhoto")}
-              </Text>
-            </TouchableOpacity>
-            {formData.profilePhoto && (
-              <>
-                <Image
-                  source={{ uri: formData.profilePhoto }}
-                  style={styles.photoPreview}
-                />
-                <TouchableOpacity
-                  style={styles.deleteButton}
-                  onPress={handleDeletePhoto}
-                >
-                  <MaterialIcons name="delete" size={24} color="#FF0000" />
-                </TouchableOpacity>
-              </>
-            )}
-
-            {/* Register Button */}
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handleSubmit(handleRegisterPost)}
-            >
-              {loading ? (
-                <ActivityIndicator size="small" color="#fff" /> // Spinner inside button
-              ) : (
-                <Text style={styles.buttonText}>{t("auth.register")}</Text>
-              )}
-            </TouchableOpacity>
-
-            {/* Sign In Link */}
-            <Text style={styles.signup}>
-              {t("auth.haveAccount")}
-              <Text
-                style={styles.signupLink}
-                onPress={() => router.push("/(screens)/Login")}
+              {/* Photo Upload */}
+              <TouchableOpacity
+                style={styles.photoButton}
+                onPress={handlePhotoUpload}
               >
-                {" "}
-                {t("auth.signIn")}
-              </Text>
-            </Text>
+                <Text style={styles.photoButtonText}>
+                  {formData.profilePhoto
+                    ? t("auth.changePhoto")
+                    : t("auth.uploadPhoto")}
+                </Text>
+              </TouchableOpacity>
+              {formData.profilePhoto && (
+                <>
+                  <Image
+                    source={{ uri: formData.profilePhoto }}
+                    style={styles.photoPreview}
+                  />
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={handleDeletePhoto}
+                  >
+                    <MaterialIcons name="delete" size={24} color="#FF0000" />
+                  </TouchableOpacity>
+                </>
+              )}
 
-            <LanguageToggle />
-          </View>
-        </ImageBackground>
-      </ScrollView>
-    </SafeAreaView>
-  );
+              {/* Register Button */}
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleSubmit(handleRegisterPost)}
+              >
+                {loading ? (
+                  <ActivityIndicator size="small" color="#fff" /> // Spinner inside button
+                ) : (
+                  <Text style={styles.buttonText}>{t("auth.register")}</Text>
+                )}
+              </TouchableOpacity>
+
+              {/* Sign In Link */}
+              <Text style={styles.signup}>
+                {t("auth.haveAccount")}
+                <Text
+                  style={styles.signupLink}
+                  onPress={() => router.push("/(screens)/Login")}
+                >
+                  {" "}
+                  {t("auth.signIn")}
+                </Text>
+              </Text>
+
+              <LanguageToggle />
+            </View>
+          </ImageBackground>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
 };
 
 const styles = StyleSheet.create({
