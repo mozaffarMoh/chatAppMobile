@@ -136,17 +136,12 @@ const Main = () => {
   if (isAuth === false) {
     return <Redirect href="/(screens)/Login" />;
   } else if (isAuth === null) {
-    <ActivityIndicator
-      animating={true}
-      color={secondaryColor}
-      size={60}
-      style={{ position: "absolute", top: "45%", left: "43%" }}
-    />;
+    return <Redirect href="/(screens)/LoadingScreen" />;
   } else {
     return (
       <FlatList
         data={currentArray}
-        renderItem={UsersItem}
+        renderItem={({ item }) => <UsersItem item={item} userId={userId} />}
         keyExtractor={(item: any) => item._id}
         style={styles.flatList}
         ListHeaderComponent={ListHeaderComponent}

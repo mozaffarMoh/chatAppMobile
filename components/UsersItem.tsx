@@ -2,7 +2,7 @@ import { primaryColor, secondaryColor } from "@/constants/colors";
 import { router } from "expo-router";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export const UsersItem = ({ item }: any) => {
+export const UsersItem = ({ item, userId }: any) => {
   let imageURL = item.profilePhoto
     ? { uri: item.profilePhoto }
     : require("@/assets/images/avatar.png");
@@ -13,9 +13,14 @@ export const UsersItem = ({ item }: any) => {
       onPress={() =>
         router.push({
           pathname: "/(screens)/SingleChat",
-          params: { name: item?.username },
+          params: {
+            name: item?.username,
+            userId,
+            receiverId: item?._id,
+            receiverImage: item?.profilePhoto,
+          },
         })
-      } 
+      }
     >
       <Image source={imageURL} style={styles.profileImage} />
       <View style={styles.textContainer}>

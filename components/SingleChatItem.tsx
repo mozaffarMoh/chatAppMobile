@@ -2,9 +2,23 @@ import { primaryColor, secondaryColor, thirdColor } from "@/constants/colors";
 import { Image, StyleSheet, Text, View } from "react-native";
 import { Surface } from "react-native-paper";
 
-export const SingleChatItem = ({ item }: any) => {
-  const backgroundColor = item.dir == "rtl" ? primaryColor : thirdColor;
-  const alignSelf = item.dir == "rtl" ? "flex-start" : "flex-end";
+export const SingleChatItem = ({ item, myData, receiverImage }: any) => {
+  const isSender = item?.sender === myData?._id;
+  const isAudio = item?.isAudio === true;
+  const backgroundColor = isSender ? primaryColor : thirdColor;
+  const alignSelf = isSender ? "flex-start" : "flex-end";
+
+  const isImageExist = (data: any) => {
+    if (typeof data == "string") return { uri: data };
+
+    return data?.profilePhoto
+      ? { uri: data?.profilePhoto }
+      : require("@/assets/images/avatar.png");
+  };
+  const imageURL = isSender
+    ? isImageExist(myData)
+    : isImageExist(receiverImage);
+
   return (
     <Surface
       style={[
@@ -16,19 +30,15 @@ export const SingleChatItem = ({ item }: any) => {
         },
       ]}
     >
-      <Image
-        source={{ uri: "https://randomuser.me/api/portraits/men/10.jpg" }}
-        style={styles.profileImage}
-      />
+      <Image source={imageURL} style={styles.profileImage} />
 
       <View>
-        <Text style={styles.message}>{item.message}</Text>
-        <Text style={styles.time}>{item.time}</Text>
+        <Text style={styles.message}>{isAudio ? "Audio" : item.message}</Text>
+        <Text style={styles.time}>{item.timestamp}</Text>
       </View>
     </Surface>
   );
 };
-
 
 const styles = StyleSheet.create({
   chatContainer: {

@@ -142,11 +142,11 @@ const Register = () => {
           message={successMessage}
           onDismiss={() => setSuccessMessage("")}
         />
-        <ScrollView>
-          <ImageBackground
-            source={require("../../assets/images/register.jpg")} // Add your background image
-            style={[styles.background, { height: height - 20 }]}
-          >
+        <ImageBackground
+          source={require("../../assets/images/register.jpg")} // Add your background image
+          style={[styles.background, { height: height - 20 }]}
+        >
+          <ScrollView contentContainerStyle={{ flex: 1 }}>
             <View style={styles.container}>
               <Text style={styles.heading}>{t("auth.welcome")}</Text>
               <Text style={styles.subheading}>{t("auth.happyToJoin")}</Text>
@@ -255,8 +255,8 @@ const Register = () => {
 
               <LanguageToggle />
             </View>
-          </ImageBackground>
-        </ScrollView>
+          </ScrollView>
+        </ImageBackground>
       </SafeAreaView>
     );
   }
