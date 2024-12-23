@@ -49,10 +49,11 @@ const Main = () => {
   /* get user id from storage */
   useFocusEffect(
     useCallback(() => {
-      !myData && setUsers([]);
-      // Fetch data when the screen is focused
-      getItemFromStorage("userId", setUserId);
-      getItemFromStorage("myData", setMyData);
+      if (!userId) getItemFromStorage("userId", setUserId);
+      if (!myData) {
+        getItemFromStorage("myData", setMyData);
+        setUsers([]);
+      }
     }, [])
   );
 

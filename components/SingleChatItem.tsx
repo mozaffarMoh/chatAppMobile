@@ -2,14 +2,21 @@ import { primaryColor, secondaryColor, thirdColor } from "@/constants/colors";
 import { Image, StyleSheet, Text, View } from "react-native";
 import { Surface } from "react-native-paper";
 
-export const SingleChatItem = ({ item, myData, receiverImage }: any) => {
+export const SingleChatItem = ({
+  item,
+  myData,
+  receiverImage,
+  direction,
+}: any) => {
   const isSender = item?.sender === myData?._id;
   const isAudio = item?.isAudio === true;
   const backgroundColor = isSender ? primaryColor : thirdColor;
-  const alignSelf = isSender ? "flex-start" : "flex-end";
+  const position = direction == "ltr" ? "flex-end" : "flex-start";
+  const reversePosition = direction == "ltr" ? "flex-start" : "flex-end";
+  const reverseDirection = direction == "ltr" ? "rtl" : "ltr";
 
   const isImageExist = (data: any) => {
-    if (typeof data == "string") return { uri: data };
+    if (typeof data == "string" && data) return { uri: data };
 
     return data?.profilePhoto
       ? { uri: data?.profilePhoto }
@@ -24,9 +31,9 @@ export const SingleChatItem = ({ item, myData, receiverImage }: any) => {
       style={[
         styles.chatContainer,
         {
-          direction: item.dir,
+          direction: isSender ? direction : reverseDirection,
           backgroundColor,
-          alignSelf,
+          alignSelf: isSender ? reversePosition : position,
         },
       ]}
     >

@@ -14,7 +14,7 @@ export const UsersItem = ({ item, userId }: any) => {
         router.push({
           pathname: "/(screens)/SingleChat",
           params: {
-            name: item?.username,
+            username: item?.username,
             userId,
             receiverId: item?._id,
             receiverImage: item?.profilePhoto,

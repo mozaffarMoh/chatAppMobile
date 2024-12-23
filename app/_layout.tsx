@@ -35,7 +35,7 @@ function RootLayout() {
 
   return (
     <AuthProvider>
-      <SQLiteProvider databaseName="data.db">
+      <SQLiteProvider databaseName="chatApp.db">
         <StatusBar style="dark" />
         <Main />
       </SQLiteProvider>

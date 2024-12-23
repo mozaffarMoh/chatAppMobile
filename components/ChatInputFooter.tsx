@@ -2,7 +2,7 @@ import { primaryColor, secondaryColor, thirdColor } from "@/constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import { useRef, useState } from "react";
 import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
-//import EmojiSelector from "react-native-emoji-selector";
+import Picker from "emoji-mart-native";
 
 export const ChatInputFooter = () => {
   const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
@@ -13,14 +13,17 @@ export const ChatInputFooter = () => {
   };
 
   const handleEmojiSelected = (emoji: any) => {
-    const currentText = inputRef.current.state.text;
-    inputRef.current.setState({ text: currentText + emoji });
+    console.log("emojie : ", emoji);
+
+    /*   const currentText = inputRef?.current.state.text;
+    inputRef?.current.setState({ text: currentText + emoji });
+  */
   };
 
   return (
     <View style={styles.footerContainer}>
       <TouchableOpacity onPress={handleEmojiPress}>
-        <Ionicons name="arrow-forward-circle" size={30} color={primaryColor} />
+        <Ionicons name="arrow-forward-circle" size={45} color={primaryColor} />
       </TouchableOpacity>
       <TextInput
         ref={inputRef}
@@ -29,14 +32,13 @@ export const ChatInputFooter = () => {
         multiline
       />
       <TouchableOpacity onPress={handleEmojiPress}>
-        <Ionicons name="happy-outline" size={24} color={thirdColor} />
+        <Ionicons name="happy-outline" size={30} color={thirdColor} />
       </TouchableOpacity>
-      {/*     {isEmojiPickerVisible && (
-      <EmojiSelector 
-        onEmojiSelected={handleEmojiSelected}
-        style={styles.emojiPicker}
-      />
-    )} */}
+      {isEmojiPickerVisible && (
+        <View style={styles.emojiPicker}>
+          {/*  <Picker onSelect={handleEmojiSelected} /> */}
+        </View>
+      )}
     </View>
   );
 };
@@ -56,9 +58,9 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   emojiPicker: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
+    position: "fixed",
+    zIndex: 100,
+    top: 0,
+    left: 20,
   },
 });

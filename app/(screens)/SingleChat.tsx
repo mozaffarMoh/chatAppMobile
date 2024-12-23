@@ -3,8 +3,10 @@ import { ChatInputFooter } from "@/components/ChatInputFooter";
 import { SingleChatItem } from "@/components/SingleChatItem";
 import { primaryColor, secondaryColor, thirdColor } from "@/constants/colors";
 import { getItemFromStorage } from "@/constants/getItemFromStorage";
-import { useGet } from "@/custom-hooks";
+import { useGet, useSQList } from "@/custom-hooks";
+import useRTL from "@/custom-hooks/useRTL";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   router,
   useFocusEffect,
@@ -23,22 +25,38 @@ import {
 import { TextInput } from "react-native-paper";
 
 const SingleChat = () => {
+  const { t, direction }: any = useRTL();
   const navigation = useNavigation();
-  const params = useLocalSearchParams();
-  const [myData, setMyData]: any = useState(1);
+  let params: any = useLocalSearchParams();
+  const [myData, setMyData]: any = useState(null);
   const [page, setPage]: any = useState(1);
+  const [isFirstRender, setIsFirstRender]: any = useState(false);
   const [messages, loading, getMessages, success, , setMessages] = useGet(
     endPoint.allMessages +
       `?userId=${params?.userId}&receiverId=${params?.receiverId}&page=${
-        page //!messagesCache[receiverId] ? 1 : page
+        page //!messagesCache ? 1 : page
       }`
   );
+  const [messagesCache]: any = useSQList(
+    messages?.messages,
+    getMessages,
+    `messages${params?.receiverId}`,
+    isFirstRender
+  );
+  console.log(messagesCache?.length);
 
+  /* handle go back */
+  const handleGoBack = () => {
+    setIsFirstRender(false);
+    router.push({ pathname: "/" });
+  };
+
+  /* first page inital */
   useEffect(() => {
     navigation.setOptions({
       headerShown: true,
       headerTitle: () => (
-        <Text style={{ fontSize: 20 }}>{params["name"] || ""}</Text>
+        <Text style={{ fontSize: 20 }}>{params["username"] || ""}</Text>
       ),
       headerStyle: {
         backgroundColor: secondaryColor, // Set the background color to green
@@ -74,29 +92,32 @@ const SingleChat = () => {
           name="arrow-back-circle"
           style={{ marginHorizontal: 10 }}
           color={thirdColor}
-          onPress={() => router.push("/")}
+          onPress={handleGoBack}
         />
       ),
     });
   }, [navigation, params]);
 
-  /* get user id from storage */
   useFocusEffect(
     useCallback(() => {
-      getItemFromStorage("myData", setMyData);
+      !myData && getItemFromStorage("myData", setMyData);
     }, [])
   );
 
+  //console.log("my data : ", myData);
+
+  /* initil the first mount */
   useFocusEffect(
     useCallback(() => {
-      setMessages([]);
-      page > 1 ? setPage(1) : getMessages();
+      setMessages({ messages: [], total: 0 });
+      setPage(1);
+      setIsFirstRender(true);
     }, [])
   );
 
   useEffect(() => {
     getMessages();
-  }, [page]);
+  }, [page, isFirstRender]);
 
   const handleLoadMore = () => {
     let usersLength = messages?.messages?.length;
@@ -106,7 +127,8 @@ const SingleChat = () => {
     }
   };
 
-  if (loading && messages.length == 0) {
+  /* Show loading on center */
+  if (loading && !messagesCache?.length) {
     return (
       <View
         style={{
@@ -121,27 +143,55 @@ const SingleChat = () => {
   }
 
   return (
-    <FlatList
-      data={messages?.messages}
-      renderItem={({ item }: any) => (
-        <SingleChatItem item={item} myData={myData} {...params} />
-      )}
-      keyExtractor={(item: any) => item?._id}
-      style={[styles.flatList, { direction: "rtl" }]}
-      onStartReached={handleLoadMore}
-      ListHeaderComponent={
-        loading ? <ActivityIndicator color={"#fff"} /> : null
-      }
-      ListFooterComponent={ChatInputFooter}
-    />
+    <View style={styles.container}>
+      <FlatList
+        data={messagesCache?.length ? messagesCache : messages?.messages}
+        renderItem={({ item }: any) => (
+          <SingleChatItem
+            item={item}
+            myData={myData}
+            direction={direction}
+            {...params}
+          />
+        )}
+        keyExtractor={(item: any) => item?._id}
+        style={[styles.flatList]}
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: "flex-end", // Centers content if empty
+        }}
+        onStartReached={handleLoadMore}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>{t("messages.hello")} 🚀</Text>
+          </View>
+        }
+        ListHeaderComponent={
+          loading ? <ActivityIndicator color={"#fff"} /> : null
+        }
+        ListFooterComponent={ChatInputFooter}
+      />
+    </View>
   );
 };
 
 export default SingleChat;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   flatList: {
     flex: 1,
     backgroundColor: secondaryColor,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyText: {
+    color: "white",
+    fontSize: 18,
   },
 });

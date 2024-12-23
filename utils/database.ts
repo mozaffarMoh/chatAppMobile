@@ -4,7 +4,7 @@ let cachedDb: SQLite.SQLiteDatabase | null = null;
 
 export const openDatabase = async () => {
     if (!cachedDb) {
-        const db = await SQLite.openDatabaseAsync('test.db');
+        const db = await SQLite.openDatabaseAsync('chatApp.db');
         cachedDb = db;
     }
     return cachedDb;

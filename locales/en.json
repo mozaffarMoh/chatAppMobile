@@ -37,7 +37,8 @@
   "messages": {
     "cantChangePassword": "You can't change your password when using a Gmail account",
     "successRegister": "Register success, welcome!",
-    "successLogin": "Login Success, welcome!"
+    "successLogin": "Login Success, welcome!",
+    "hello" : "Hello, let’s start"
   },
   "alerts": {
     "confirmLogout": "Are you sure you want to logout ?",
