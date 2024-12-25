@@ -5,7 +5,7 @@
     "pleaseSignIn": "Please sign in to continue.",
     "happyToJoin": "We are very excited to join us!",
     "login": "Login",
-    "loginWithGoogle":"Login by Google",
+    "loginWithGoogle": "Login by Google",
     "register": "Create",
     "changePhoto": "Change Photo",
     "uploadPhoto": "Upload Photo",
@@ -32,13 +32,15 @@
     "uploadPhoto": "Upload Photo",
     "update": "Update",
     "deleteMyAccount": "Delete My Account",
-    "remove": "Remove"
+    "remove": "Remove",
+    "deleteMessage": "Delete Message",
+    "editMessage": "Edit Message"
   },
   "messages": {
     "cantChangePassword": "You can't change your password when using a Gmail account",
     "successRegister": "Register success, welcome!",
     "successLogin": "Login Success, welcome!",
-    "hello" : "Hello, let’s start"
+    "hello": "Hello, let’s start"
   },
   "alerts": {
     "confirmLogout": "Are you sure you want to logout ?",
@@ -52,5 +54,9 @@
     "nonEmpty": "This field cannot be empty.",
     "invalidEmail": "Please enter a valid email address.",
     "passwordMinLength": "Password must be at least 5 characters."
+  },
+  "placeholder": {
+    "chatInputPlaceholder": "Type your message...",
+    "updateMessage": "Type your updated message..."
   }
 }

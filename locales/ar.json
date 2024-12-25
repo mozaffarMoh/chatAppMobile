@@ -31,7 +31,9 @@
     "uploadPhoto": "تحميل صورة",
     "update": "تحديث",
     "deleteMyAccount": "حذف حسابي",
-    "remove": "إزالة"
+    "remove": "إزالة",
+    "deleteMessage": "حذف الرسالة",
+    "editMessage": "تعديل الرسالة"
   },
   "messages": {
     "cantChangePassword": "لاتستطيع تغيير كلمة المرور عند استخدام حساب جيميل",
@@ -52,5 +54,9 @@
     "nonEmpty": "لا يمكن ترك هذا الحقل فارغًا.",
     "invalidEmail": "يرجى إدخال عنوان بريد إلكتروني صحيح.",
     "passwordMinLength": "يجب أن تحتوي كلمة المرور على 5 أحرف على الأقل."
+  },
+  "placeholder": {
+    "chatInputPlaceholder": "اكتب رسالتك...",
+    "updateMessage": "اكتب رسالتك الجديدة.."
   }
 }

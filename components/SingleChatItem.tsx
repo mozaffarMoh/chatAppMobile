@@ -1,6 +1,7 @@
 import { primaryColor, secondaryColor, thirdColor } from "@/constants/colors";
 import { Image, StyleSheet, Text, View } from "react-native";
 import { Surface } from "react-native-paper";
+import dayjs from "dayjs";
 
 export const SingleChatItem = ({
   item,
@@ -41,7 +42,9 @@ export const SingleChatItem = ({
 
       <View>
         <Text style={styles.message}>{isAudio ? "Audio" : item.message}</Text>
-        <Text style={styles.time}>{item.timestamp}</Text>
+        <Text style={styles.time}>
+          {dayjs(item.timestamp).format("DD-MM-YYYY || HH:mm a")}
+        </Text>
       </View>
     </Surface>
   );

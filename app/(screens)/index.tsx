@@ -52,17 +52,14 @@ const Main = () => {
       if (!userId) getItemFromStorage("userId", setUserId);
       if (!myData) {
         getItemFromStorage("myData", setMyData);
-        setUsers([]);
       }
     }, [])
   );
 
   /* get all users */
-  useFocusEffect(
-    useCallback(() => {
-      if (userId) getUsers();
-    }, [userId, page])
-  );
+  useEffect(() => {
+    if (userId) getUsers();
+  }, [userId, page]);
 
   /* store myData in storage if exist */
   useEffect(() => {

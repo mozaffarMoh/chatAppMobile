@@ -6,7 +6,6 @@ import { getItemFromStorage } from "@/constants/getItemFromStorage";
 import { useGet, useSQList } from "@/custom-hooks";
 import useRTL from "@/custom-hooks/useRTL";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   router,
   useFocusEffect,
@@ -16,26 +15,50 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
-import { TextInput } from "react-native-paper";
+import NetInfo from "@react-native-community/netinfo";
+import {
+  GestureHandlerRootView,
+  LongPressGestureHandler,
+  State,
+} from "react-native-gesture-handler";
+import MessageUpdate from "@/components/MessageUpdate";
+import { chatMessagesExample } from "@/constants/chatMessagesExample";
+import CallSection from "@/components/CallSection";
+import { io } from "socket.io-client";
 
 const SingleChat = () => {
   const { t, direction }: any = useRTL();
   const navigation = useNavigation();
   let params: any = useLocalSearchParams();
   const [myData, setMyData]: any = useState(null);
-  const [page, setPage]: any = useState(1);
+  const [page, setPage]: any = useState(2);
   const [isFirstRender, setIsFirstRender]: any = useState(false);
+  const [isOnline, setIsOnline] = useState<boolean | null>(null);
+  const [readyToGetMessages, setReadyToGetMessages]: any = useState(false);
+  const [showMesseageUpdate, setShowMesseageUpdate]: any = useState(false);
+  const [isAudioCall, setIsAudioCall]: any = useState(false);
+  const [isVideoCall, setIsVideoCall]: any = useState(false);
+  const [isCallStart, setIsCallStart] = useState<boolean>(false);
+  const socketRef = useRef<any>(null);
+  const [name, setName] = useState<string>("");
+  const [caller, setCaller] = useState<string>("");
+  const [callerSignal, setCallerSignal] = useState<object | null>(null);
+  const [stream, setStream]: any = useState<object | null>(null);
+  const [isReceiveCall, setIsReceiveCall] = useState<boolean>(false);
+  const [isMessageReceived, setIsMessageReceived] = useState<boolean>(false);
+  const [messageToUpdate, setMessageToUpdate]: any = useState({
+    _id: "",
+    message: "",
+  });
   const [messages, loading, getMessages, success, , setMessages] = useGet(
     endPoint.allMessages +
-      `?userId=${params?.userId}&receiverId=${params?.receiverId}&page=${
-        page //!messagesCache ? 1 : page
-      }`
+      `?userId=${params?.userId}&receiverId=${params?.receiverId}&page=${page}`
   );
   const [messagesCache]: any = useSQList(
     messages?.messages,
@@ -43,20 +66,32 @@ const SingleChat = () => {
     `messages${params?.receiverId}`,
     isFirstRender
   );
-  console.log(messagesCache?.length);
 
   /* handle go back */
   const handleGoBack = () => {
     setIsFirstRender(false);
+    setMessages({ messages: [], total: 0 });
     router.push({ pathname: "/" });
   };
+
+  // Check the network status
+  useFocusEffect(
+    useCallback(() => {
+      const unsubscribe = NetInfo.addEventListener((state: any) => {
+        setIsOnline(state.isConnected);
+      });
+      return () => unsubscribe(); // Clean up the listener
+    }, [])
+  );
 
   /* first page inital */
   useEffect(() => {
     navigation.setOptions({
       headerShown: true,
       headerTitle: () => (
-        <Text style={{ fontSize: 20 }}>{params["username"] || ""}</Text>
+        <Text style={{ fontSize: 20, fontWeight: 700, color: "#333" }}>
+          {params["username"] || ""}
+        </Text>
       ),
       headerStyle: {
         backgroundColor: secondaryColor, // Set the background color to green
@@ -73,16 +108,17 @@ const SingleChat = () => {
         >
           <Ionicons
             size={28}
-            name="videocam"
-            color={primaryColor}
-            style={{ backgroundColor: secondaryColor }}
-          />
-
-          <Ionicons
-            size={28}
             name="call"
             color={thirdColor}
             style={{ backgroundColor: secondaryColor }}
+            onPress={() => handleShowCall("audio")}
+          />
+          <Ionicons
+            size={32}
+            name="videocam"
+            color={primaryColor}
+            style={{ backgroundColor: secondaryColor }}
+            onPress={() => handleShowCall("video")}
           />
         </View>
       ),
@@ -104,13 +140,11 @@ const SingleChat = () => {
     }, [])
   );
 
-  //console.log("my data : ", myData);
-
   /* initil the first mount */
   useFocusEffect(
     useCallback(() => {
       setMessages({ messages: [], total: 0 });
-      setPage(1);
+      page > 2 && setPage(2);
       setIsFirstRender(true);
     }, [])
   );
@@ -127,8 +161,72 @@ const SingleChat = () => {
     }
   };
 
+  /* is message sent recall the messages */
+  useFocusEffect(
+    useCallback(() => {
+      if (readyToGetMessages) {
+        setReadyToGetMessages(false);
+        getMessages();
+      }
+    }, [readyToGetMessages])
+  );
+
+  /* if user receive a message recall the messages */
+  useEffect(() => {
+    if (isMessageReceived) {
+      getMessages();
+      setIsMessageReceived(false);
+    }
+  }, [isMessageReceived]);
+
+  const handleShowCall = (type: string) => {
+    if (!isCallStart) {
+      setIsCallStart(true);
+      type == "audio" && setIsAudioCall(true);
+      type == "video" && setIsVideoCall(true);
+    }
+  };
+
+  // Socket Code
+  useEffect(() => {
+    const socket = io("https://chatappapi-2w5v.onrender.com");
+    socketRef.current = socket;
+
+    const handleReceiveMessage = (messageReceiverID: string) => {
+      if (myData?._id == messageReceiverID) {
+        setIsMessageReceived(true);
+      }
+    };
+
+    const handleReceiveCall = (data: any) => {
+      if (myData?._id == data.userToCall) {
+        setIsReceiveCall(true);
+        setIsVideoCall(data.video);
+        setIsAudioCall(data.voice);
+        //setIsReceiveCall(true);
+        setCaller(data.from);
+        setCallerSignal(data.signal);
+        setName(data.name);
+      }
+    };
+
+    /*   navigator?.mediaDevices
+      .getUserMedia({ video: true, audio: true })
+      .then((stream) => {
+        setStream(stream);
+      }); */
+
+    socket.on("receiveMessage", handleReceiveMessage);
+    socket.on("callUser", handleReceiveCall);
+
+    return () => {
+      socket.off("receiveMessage", handleReceiveMessage);
+      socket.disconnect();
+    };
+  }, []);
+
   /* Show loading on center */
-  if (loading && !messagesCache?.length) {
+  if (loading && !messages?.messages?.length) {
     return (
       <View
         style={{
@@ -144,32 +242,101 @@ const SingleChat = () => {
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={messagesCache?.length ? messagesCache : messages?.messages}
-        renderItem={({ item }: any) => (
-          <SingleChatItem
-            item={item}
-            myData={myData}
-            direction={direction}
-            {...params}
-          />
-        )}
-        keyExtractor={(item: any) => item?._id}
-        style={[styles.flatList]}
-        contentContainerStyle={{
-          flexGrow: 1,
-          justifyContent: "flex-end", // Centers content if empty
-        }}
-        onStartReached={handleLoadMore}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>{t("messages.hello")} 🚀</Text>
-          </View>
+      <GestureHandlerRootView>
+        <FlatList
+          data={isOnline ? messages?.messages : messagesCache}
+          renderItem={({ item }: any) => (
+            <LongPressGestureHandler
+              onHandlerStateChange={({ nativeEvent }) => {
+                if (nativeEvent.state === State.ACTIVE) {
+                  setShowMesseageUpdate(true);
+                  setMessageToUpdate({
+                    _id: item?._id,
+                    message: item?.message,
+                  });
+                }
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor:
+                    item?._id == messageToUpdate?._id
+                      ? thirdColor + "88"
+                      : secondaryColor,
+                }}
+              >
+                <SingleChatItem
+                  item={item}
+                  myData={myData}
+                  direction={direction}
+                  {...params}
+                />
+              </View>
+            </LongPressGestureHandler>
+          )}
+          maintainVisibleContentPosition={{
+            minIndexForVisible: 0,
+          }}
+          keyExtractor={(item: any) => item?._id}
+          style={[styles.flatList]}
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "flex-end", // Centers content if empty
+          }}
+          onStartReached={handleLoadMore}
+          onStartReachedThreshold={0.1}
+          ListEmptyComponent={
+            success && (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>{t("messages.hello")} 🚀</Text>
+              </View>
+            )
+          }
+          ListHeaderComponent={
+            loading ? <ActivityIndicator color={"#fff"} /> : null
+          }
+        />
+      </GestureHandlerRootView>
+      {/* ChatInputFooter moved here */}
+      <ChatInputFooter
+        direction={direction}
+        t={t}
+        {...params}
+        setReadyToGetMessages={setReadyToGetMessages}
+        socketRef={socketRef}
+      />
+
+      <MessageUpdate
+        t={t}
+        messageToUpdate={messageToUpdate}
+        setMessageToUpdate={setMessageToUpdate}
+        isVisible={showMesseageUpdate}
+        setReadyToGetMessages={setReadyToGetMessages}
+        handleCloseModal={() => setShowMesseageUpdate(false)}
+      />
+
+      <CallSection
+        t={t}
+        isVisible={isAudioCall || isVideoCall}
+        isAudioCall={isAudioCall}
+        isVideoCall={isVideoCall}
+        handleCloseModal={
+          isAudioCall
+            ? () => setIsAudioCall(false)
+            : isVideoCall
+              ? () => setIsVideoCall(false)
+              : null
         }
-        ListHeaderComponent={
-          loading ? <ActivityIndicator color={"#fff"} /> : null
-        }
-        ListFooterComponent={ChatInputFooter}
+        myData={myData}
+        name={name}
+        caller={caller}
+        stream={stream}
+        callerSignal={callerSignal}
+        isReceiveCall={isReceiveCall}
+        isCallStart={isCallStart}
+        setIsCallStart={setIsCallStart}
+        setIsReceiveCall={setIsReceiveCall}
+        {...params}
       />
     </View>
   );

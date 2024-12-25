@@ -14,6 +14,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Main from "./main";
 import { Slot, Stack } from "expo-router";
 import { AuthProvider } from "@/components/AuthProviders";
+import SingleChat from "./(screens)/SingleChat";
+
 
 SplashScreen.preventAutoHideAsync();
 

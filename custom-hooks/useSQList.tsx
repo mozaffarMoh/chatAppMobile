@@ -40,24 +40,20 @@ const useSQList = (
     useCallback(() => {
       const saveOrFetchData = async () => {
         const db = await openDatabase();
-        const savedData: any = await db.getAllAsync(
-          `SELECT * FROM ${tableName}`
-        );
-
-        if (
-          isOnline === false ||
-          (dataFetched?.length && dataFetched?.length < savedData?.length)
-        ) {
-          console.log("Fetching data from SQLite...");
-          setData(savedData);
-        } else if (isOnline === true && dataFetched?.length) {
+        if (isOnline === true && dataFetched?.length) {
           console.log("Saving fetched data...");
           setData(dataFetched);
           await saveDataInSQLite(db, tableName, dataFetched);
+        } else if (isOnline === false) {
+          console.log("Fetching data from SQLite...");
+          const savedData: any = await db.getAllAsync(
+            `SELECT * FROM ${tableName}`
+          );
+          setData(savedData);
         }
       };
 
-      saveOrFetchData();
+      //saveOrFetchData();
     }, [dataFetched, isOnline, isFirstRender])
   );
 
