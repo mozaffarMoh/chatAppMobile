@@ -17,8 +17,12 @@ import { UsersItem } from "@/components/UsersItem";
 import { Ionicons } from "@expo/vector-icons";
 import { primaryColor, secondaryColor } from "@/constants/colors";
 import { useAuth } from "@/components/AuthProviders";
+import { useDispatch, useSelector } from "react-redux";
+import { RootType } from "@/store";
+import { setIsUsersRefresh } from "@/Slices/refreshUsers";
 
 const Main = () => {
+  const dispatch = useDispatch();
   const { isAuth }: any = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const { t }: any = useRTL();
@@ -26,6 +30,9 @@ const Main = () => {
   const [userId, setUserId]: any = useState("");
   const [page, setPage]: any = useState(1);
   const navigation = useNavigation();
+  const isUserSeeMessages: any = useSelector(
+    (state: RootType) => state.refreshUsers.value
+  );
   const [users, loading, getUsers, success, , setUsers] = useGet(
     endPoint.allUsers + userId + "?page=" + page
   );
@@ -61,6 +68,13 @@ const Main = () => {
     if (userId) getUsers();
   }, [userId, page]);
 
+  useEffect(() => {
+    if (isUserSeeMessages) {
+      dispatch(setIsUsersRefresh(false));
+      getUsers();
+    }
+  }, [isUserSeeMessages]);
+  
   /* store myData in storage if exist */
   useEffect(() => {
     if (users?.users && !myData) {

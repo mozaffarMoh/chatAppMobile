@@ -13,6 +13,8 @@ import Picker from "emoji-mart-native";
 import { endPoint } from "@/api/endPoint";
 import { usePost } from "@/custom-hooks";
 import { ActivityIndicator } from "react-native-paper";
+import { Audio } from "expo-av";
+import { playSendMessageSound } from "@/constants/soundsFiles";
 
 export const ChatInputFooter = ({
   direction,
@@ -35,6 +37,7 @@ export const ChatInputFooter = ({
 
   const handleSendMessage = () => {
     if (message) {
+      playSendMessageSound();
       setMessage("");
       socketRef.current.emit("sendMessage", receiverId);
       sendMessagePost();
@@ -70,7 +73,11 @@ export const ChatInputFooter = ({
         <ActivityIndicator size={25} color={primaryColor} />
       ) : (
         <TouchableOpacity onPress={handleSendMessage}>
-          <Ionicons name={sendIcon} size={45} color={!message ? primaryColor+'77' : primaryColor} />
+          <Ionicons
+            name={sendIcon}
+            size={45}
+            color={!message ? primaryColor + "77" : primaryColor}
+          />
         </TouchableOpacity>
       )}
       <TextInput

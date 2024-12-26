@@ -15,7 +15,8 @@ import Main from "./main";
 import { Slot, Stack } from "expo-router";
 import { AuthProvider } from "@/components/AuthProviders";
 import SingleChat from "./(screens)/SingleChat";
-
+import { Provider } from "react-redux";
+import store from "@/store";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -36,12 +37,14 @@ function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <SQLiteProvider databaseName="chatApp.db">
-        <StatusBar style="dark" />
-        <Main />
-      </SQLiteProvider>
-    </AuthProvider>
+    <Provider store={store}>
+      <AuthProvider>
+        <SQLiteProvider databaseName="chatApp.db">
+          <StatusBar style="dark" />
+          <Main />
+        </SQLiteProvider>
+      </AuthProvider>
+    </Provider>
   );
 }
 

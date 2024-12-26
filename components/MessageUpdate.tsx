@@ -60,7 +60,7 @@ const MessageUpdate = ({
         <View style={styles.modalContainer}>
           <Ionicons
             name="close-circle-outline"
-            size={25}
+            size={35}
             style={styles.closeIcon}
             onPress={handleClose}
           />

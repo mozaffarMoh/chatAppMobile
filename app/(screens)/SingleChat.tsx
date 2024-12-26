@@ -31,10 +31,15 @@ import MessageUpdate from "@/components/MessageUpdate";
 import { chatMessagesExample } from "@/constants/chatMessagesExample";
 import CallSection from "@/components/CallSection";
 import { io } from "socket.io-client";
+import { setIsUsersRefresh } from "@/Slices/refreshUsers";
+import { useDispatch } from "react-redux";
+import { Audio } from "expo-av";
+import { playReceiveMessageSound } from "@/constants/soundsFiles";
 
 const SingleChat = () => {
   const { t, direction }: any = useRTL();
   const navigation = useNavigation();
+  const dispatch = useDispatch();
   let params: any = useLocalSearchParams();
   const [myData, setMyData]: any = useState(null);
   const [page, setPage]: any = useState(2);
@@ -174,7 +179,9 @@ const SingleChat = () => {
   /* if user receive a message recall the messages */
   useEffect(() => {
     if (isMessageReceived) {
+      playReceiveMessageSound();
       getMessages();
+      dispatch(setIsUsersRefresh(true));
       setIsMessageReceived(false);
     }
   }, [isMessageReceived]);
@@ -203,7 +210,6 @@ const SingleChat = () => {
         setIsReceiveCall(true);
         setIsVideoCall(data.video);
         setIsAudioCall(data.voice);
-        //setIsReceiveCall(true);
         setCaller(data.from);
         setCallerSignal(data.signal);
         setName(data.name);
@@ -224,6 +230,10 @@ const SingleChat = () => {
       socket.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    if (success) dispatch(setIsUsersRefresh(true));
+  }, [success]);
 
   /* Show loading on center */
   if (loading && !messages?.messages?.length) {
@@ -248,7 +258,10 @@ const SingleChat = () => {
           renderItem={({ item }: any) => (
             <LongPressGestureHandler
               onHandlerStateChange={({ nativeEvent }) => {
-                if (nativeEvent.state === State.ACTIVE) {
+                if (
+                  nativeEvent.state === State.ACTIVE &&
+                  item?.sender === myData?._id
+                ) {
                   setShowMesseageUpdate(true);
                   setMessageToUpdate({
                     _id: item?._id,

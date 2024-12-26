@@ -22,6 +22,14 @@ export const UsersItem = ({ item, userId }: any) => {
         })
       }
     >
+      {item && item?.unReadMessages && item?.unReadMessages[userId] && (
+        <View style={styles.notify}>
+          <Text style={styles.textNotify}>
+            {item?.unReadMessages?.[userId] || 5}
+          </Text>
+        </View>
+      )}
+
       <Image source={imageURL} style={styles.profileImage} />
       <View style={styles.textContainer}>
         <Text style={styles.username}>{item?.username}</Text>
@@ -63,5 +71,23 @@ const styles = StyleSheet.create({
   email: {
     fontSize: 14,
     color: secondaryColor,
+  },
+  notify: {
+    width: 25,
+    height: 25,
+    borderRadius: 50,
+    backgroundColor: secondaryColor,
+    position: "absolute",
+    top: 3,
+    left: 5,
+    zIndex: 100,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  textNotify: {
+    textAlign: "center",
+    color: "yellow",
+    fontWeight: 800,
   },
 });

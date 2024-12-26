@@ -37,6 +37,12 @@
     },
     "plugins": [
       [
+        "expo-av",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
+        }
+      ],
+      [
         "expo-notifications",
         {
           "icon": "./assets/images/favicon.png",

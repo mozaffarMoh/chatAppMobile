@@ -12,7 +12,7 @@ export const refreshUsers = createSlice({
   name: "user",
   initialState,
   reducers: {
-    setIsUsersRefresh: (state, action: PayloadAction<boolean>) => {
+    setIsUsersRefresh: (state:any, action: PayloadAction<boolean>) => {
       state.value = action.payload;
     },
   },
