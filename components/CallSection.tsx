@@ -14,7 +14,12 @@ import "react-native-get-random-values";
 import LottieView from "lottie-react-native";
 import Video from "react-native-video";
 import { Audio } from "expo-av";
-import { playReceiveCallSound, playSendCallSound, stopReceiveCallSound, stopSendCallSound } from "@/constants/soundsFiles";
+import {
+  playReceiveCallSound,
+  playSendCallSound,
+  stopReceiveCallSound,
+  stopSendCallSound,
+} from "@/constants/soundsFiles";
 
 const CallSection = ({
   t,
@@ -204,7 +209,9 @@ const CallSection = ({
     ? require("@/assets/animations/audioCall.json")
     : require("@/assets/animations/videoCall.json");
 
-  console.log("stream is : ", localStreamRef?.current?.srcObject);
+  if (localStreamRef?.current) {
+    console.log("stream is : ", localStreamRef?.current?.srcObject);
+  }
 
   return (
     <Modal

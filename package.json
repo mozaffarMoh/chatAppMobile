@@ -31,6 +31,7 @@
     "emoji-mart-native": "^0.6.5-beta",
     "expo": "~52.0.11",
     "expo-auth-session": "~6.0.1",
+    "expo-av": "~15.0.1",
     "expo-blur": "~14.0.1",
     "expo-camera": "~16.0.7",
     "expo-constants": "~17.0.3",
@@ -62,6 +63,7 @@
     "react-hook-form": "^7.53.2",
     "react-i18next": "^15.1.2",
     "react-native": "0.76.3",
+    "react-native-audio-recorder-player": "^3.6.12",
     "react-native-axios": "^0.17.1",
     "react-native-dropdown-picker": "^5.4.6",
     "react-native-emoji-picker": "^0.2.2",
@@ -79,8 +81,7 @@
     "react-native-webview": "13.12.2",
     "react-redux": "^9.2.0",
     "socket.io-client": "^4.8.1",
-    "zod": "^3.23.8",
-    "expo-av": "~15.0.1"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

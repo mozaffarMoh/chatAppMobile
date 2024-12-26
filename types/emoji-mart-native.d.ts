@@ -1,5 +1,6 @@
 declare module 'emoji-mart-native' {
-    const EmojiMartNative: any;
-    export default EmojiMartNative;
-  }
-  
+  export const ModalPicker: any;
+  export const Picker: any;
+  const EmojiMartNative: any;
+  export default EmojiMartNative;
+}

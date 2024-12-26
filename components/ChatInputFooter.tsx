@@ -3,18 +3,20 @@ import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
+  Modal,
   Platform,
   StyleSheet,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import Picker from "emoji-mart-native";
+import { Picker } from "emoji-mart-native";
 import { endPoint } from "@/api/endPoint";
 import { usePost } from "@/custom-hooks";
 import { ActivityIndicator } from "react-native-paper";
 import { Audio } from "expo-av";
 import { playSendMessageSound } from "@/constants/soundsFiles";
+import RecordingAudio from "./RecordingAudio";
 
 export const ChatInputFooter = ({
   direction,
@@ -25,14 +27,18 @@ export const ChatInputFooter = ({
   socketRef,
 }: any) => {
   const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
+  const [openRecordingModal, setOpenRecordingModal] = useState(false);
   const [message, setMessage] = useState("");
+  const [duration, setDuration] = useState("00:30");
   const inputRef: any = useRef(null);
-  const reverseDirection = direction == "rtl" ? "ltr" : "rtl";
-  const sendIcon =
-    direction == "rtl" ? "arrow-back-circle" : "arrow-forward-circle";
+  const isRTL = direction == "rtl";
+  const reverseDirection = isRTL ? "ltr" : "rtl";
+  const body = message?.startsWith("data:audio/webm;base64")
+    ? { message, isAudio: true, duration }
+    : { message };
   const [sendMessagePost, loadingSendMessage, successMessageSent] = usePost(
     `${endPoint.sendMessage}?userId=${userId}&receiverId=${receiverId}`,
-    { message }
+    body
   );
 
   const handleSendMessage = () => {
@@ -49,11 +55,11 @@ export const ChatInputFooter = ({
   };
 
   const handleEmojiSelected = (emoji: any) => {
-    console.log("emojie : ", emoji);
+    console.log("emojie : ", emoji?.native);
+    setMessage((currentText) => currentText + emoji?.native);
 
-    /*   const currentText = inputRef?.current.state.text;
-    inputRef?.current.setState({ text: currentText + emoji });
-  */
+    // const currentText = inputRef?.current.state.text;
+    // inputRef?.current.setState({ text: currentText + emoji });
   };
 
   const handleTypeMessage = (text: string) => {
@@ -61,11 +67,14 @@ export const ChatInputFooter = ({
   };
 
   useEffect(() => {
-    if (successMessageSent && message) {
+    if (successMessageSent) {
       setReadyToGetMessages(true);
-      setMessage("");
     }
   }, [successMessageSent]);
+
+  if (message) {
+    console.log(message?.slice(0, 100));
+  }
 
   return (
     <View style={[styles.footerContainer, { direction: reverseDirection }]}>
@@ -74,9 +83,10 @@ export const ChatInputFooter = ({
       ) : (
         <TouchableOpacity onPress={handleSendMessage}>
           <Ionicons
-            name={sendIcon}
-            size={45}
-            color={!message ? primaryColor + "77" : primaryColor}
+            name={!message ? "send-outline" : "send"}
+            size={25}
+            style={{ transform: isRTL ? "rotate(180deg)" : "rotate(0deg)" }}
+            color={!message ? thirdColor + "77" : thirdColor}
           />
         </TouchableOpacity>
       )}
@@ -88,14 +98,44 @@ export const ChatInputFooter = ({
         value={message}
         onChangeText={handleTypeMessage}
       />
-      <TouchableOpacity onPress={handleEmojiPress}>
-        <Ionicons name="happy-outline" size={30} color={thirdColor} />
+      <TouchableOpacity
+        style={{ marginLeft: !isRTL ? 7 : 0, marginRight: isRTL ? 7 : 0 }}
+        onPress={() => setOpenRecordingModal(true)}
+      >
+        <Ionicons name="mic" size={25} color={thirdColor} />
       </TouchableOpacity>
+      <TouchableOpacity onPress={handleEmojiPress}>
+        <Ionicons name="happy-outline" size={25} color={thirdColor} />
+      </TouchableOpacity>
+
       {isEmojiPickerVisible && (
-        <View style={styles.emojiPicker}>
-          {/*  <Picker onSelect={handleEmojiSelected} /> */}
-        </View>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isEmojiPickerVisible}
+          onRequestClose={() => setIsEmojiPickerVisible(false)}
+        >
+          <View style={styles.emojiPickerModal}>
+            <Picker onSelect={handleEmojiSelected} />
+            <Ionicons
+              onPress={() => setIsEmojiPickerVisible(false)}
+              name="close-circle"
+              size={50}
+              color="#fd9"
+            />
+          </View>
+        </Modal>
       )}
+
+      <RecordingAudio
+        isVisible={openRecordingModal}
+        handleCloseModal={() => setOpenRecordingModal(false)}
+        message={message}
+        setMessage={setMessage}
+        handleSendMessage={handleSendMessage}
+        setDuration={setDuration}
+        isRTL={isRTL}
+      />
     </View>
   );
 };
@@ -113,10 +153,9 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 10,
   },
-  emojiPicker: {
-    position: "fixed",
-    zIndex: 100,
-    top: 0,
-    left: 20,
+  emojiPickerModal: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
