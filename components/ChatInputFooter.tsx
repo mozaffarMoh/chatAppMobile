@@ -79,12 +79,12 @@ export const ChatInputFooter = ({
   return (
     <View style={[styles.footerContainer, { direction: reverseDirection }]}>
       {loadingSendMessage ? (
-        <ActivityIndicator size={25} color={primaryColor} />
+        <ActivityIndicator size={25} color={thirdColor} />
       ) : (
         <TouchableOpacity onPress={handleSendMessage}>
           <Ionicons
             name={!message ? "send-outline" : "send"}
-            size={25}
+            size={30}
             style={{ transform: isRTL ? "rotate(180deg)" : "rotate(0deg)" }}
             color={!message ? thirdColor + "77" : thirdColor}
           />
@@ -102,10 +102,10 @@ export const ChatInputFooter = ({
         style={{ marginLeft: !isRTL ? 7 : 0, marginRight: isRTL ? 7 : 0 }}
         onPress={() => setOpenRecordingModal(true)}
       >
-        <Ionicons name="mic" size={25} color={thirdColor} />
+        <Ionicons name="mic" size={30} color={thirdColor} />
       </TouchableOpacity>
       <TouchableOpacity onPress={handleEmojiPress}>
-        <Ionicons name="happy-outline" size={25} color={thirdColor} />
+        <Ionicons name="happy-outline" size={30} color={thirdColor} />
       </TouchableOpacity>
 
       {isEmojiPickerVisible && (
@@ -116,7 +116,7 @@ export const ChatInputFooter = ({
           onRequestClose={() => setIsEmojiPickerVisible(false)}
         >
           <View style={styles.emojiPickerModal}>
-            <Picker onSelect={handleEmojiSelected} />
+            <Picker set="apple" native={true} onSelect={handleEmojiSelected} />
             <Ionicons
               onPress={() => setIsEmojiPickerVisible(false)}
               name="close-circle"
