@@ -20,6 +20,8 @@ import { useAuth } from "@/components/AuthProviders";
 import { useDispatch, useSelector } from "react-redux";
 import { RootType } from "@/store";
 import { setIsUsersRefresh } from "@/Slices/refreshUsers";
+import { setIsProfileUpdated } from "@/Slices/isProfileUpdated";
+import { setIsReset } from "@/Slices/isReset";
 
 const Main = () => {
   const dispatch = useDispatch();
@@ -33,6 +35,10 @@ const Main = () => {
   const isUserSeeMessages: any = useSelector(
     (state: RootType) => state.refreshUsers.value
   );
+  const isProfileUpdated: any = useSelector(
+    (state: RootType) => state.isProfileUpdated.value
+  );
+  const isReset: any = useSelector((state: RootType) => state.isReset.value);
   const [users, loading, getUsers, success, , setUsers] = useGet(
     endPoint.allUsers + userId + "?page=" + page
   );
@@ -69,12 +75,31 @@ const Main = () => {
   }, [userId, page]);
 
   useEffect(() => {
-    if (isUserSeeMessages) {
+    if (isUserSeeMessages || isProfileUpdated) {
       dispatch(setIsUsersRefresh(false));
+      dispatch(setIsProfileUpdated(false));
       getUsers();
     }
-  }, [isUserSeeMessages]);
-  
+  }, [isUserSeeMessages, isProfileUpdated]);
+
+  /* reset all states */
+  useEffect(() => {
+    if (isReset) {
+      handleReset();
+    }
+  }, [isReset]);
+
+  /* reset all states function */
+  const handleReset = () => {
+    dispatch(setIsReset(false));
+    setSearchQuery("");
+    setUserId("");
+    setMyData(null);
+    setPage(1);
+    setUsers([]);
+    setFilteredUsersData([]);
+  };
+
   /* store myData in storage if exist */
   useEffect(() => {
     if (users?.users && !myData) {

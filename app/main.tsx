@@ -25,6 +25,7 @@ const Main = () => {
             backgroundColor: primaryColor + "cc",
           },
           headerRight: () => <LanguageToggle />,
+          swipeEnabled: isAuth ? true : false, 
         }}
         drawerContent={() => <DrawerContent />}
       />

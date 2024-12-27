@@ -23,10 +23,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { updateProfileSchema } from "@/constants/zodSchema/updateProfileSchema";
+import { setIsProfileUpdated } from "@/Slices/isProfileUpdated";
+import { useDispatch, useSelector } from "react-redux";
+import { setIsReset } from "@/Slices/isReset";
+import { RootType } from "@/store";
 
 const MyAccount = () => {
   const navigation = useNavigation();
   const { t }: any = useRTL();
+  const dispatch = useDispatch();
+  const isReset: any = useSelector((state: RootType) => state.isReset.value);
   const [myData, setMyData]: any = useState(null);
   const [imageURI, setImageURI]: any = useState(null);
   const [oldPasswordVisible, setOldPasswordVisible] = useState(false); // State to toggle password visibility
@@ -55,6 +61,7 @@ const MyAccount = () => {
     control,
     handleSubmit,
     formState: { errors },
+    reset,
     setValue,
   }: any = useForm({
     resolver: zodResolver(updateProfileSchema(formData, t)), // Integrate Zod with React Hook Form
@@ -149,6 +156,7 @@ const MyAccount = () => {
           oldPassword: "",
           newPassword: "",
         });
+
         setValue("username", myData?.username);
       }
     }, [myData])
@@ -183,6 +191,8 @@ const MyAccount = () => {
         username: formData?.username,
       };
 
+      dispatch(setIsProfileUpdated(true));
+
       AsyncStorage.setItem("myData", JSON.stringify(myDataUpdated));
 
       setFormData((prevData: any) => {
@@ -211,6 +221,29 @@ const MyAccount = () => {
       ]
     );
   };
+
+  /* reset all states */
+  useEffect(() => {
+    if (isReset) {
+      handleReset();
+    }
+  }, [isReset]);
+
+  /* reset all states function */
+  const handleReset = () => {
+    dispatch(setIsReset(false));
+    reset();
+    setMyData(null);
+    setImageURI(null);
+    setFormData({
+      username: "",
+      email: "",
+      profilePhoto: "",
+      oldPassword: "",
+      newPassword: "",
+    });
+  };
+
   return (
     <View style={styles.container}>
       <CustomSnackbar

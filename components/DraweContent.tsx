@@ -22,8 +22,6 @@ export default function DrawerContent() {
   const navigationItems = [
     { name: t("header.main"), route: "/" },
     { name: t("header.myAccount"), route: "/(screens)/MyAccount" },
-    { name: t("auth.login"), route: "/(screens)/Login" },
-    { name: t("auth.signUp"), route: "/(screens)/Register" },
     { name: t("header.logout") },
   ];
 
