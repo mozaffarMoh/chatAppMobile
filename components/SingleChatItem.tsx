@@ -7,12 +7,7 @@ import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import * as FileSystem from "expo-file-system";
 
-export const SingleChatItem = ({
-  item,
-  myData,
-  receiverImage,
-  direction,
-}: any) => {
+export const SingleChatItem = ({ item, myData, direction,receiverImage }: any) => {
   const isSender = item?.sender === myData?._id;
   const isAudio = item?.isAudio === true;
   const backgroundColor = isSender ? primaryColor : thirdColor;

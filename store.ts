@@ -4,6 +4,7 @@ import refreshUsersReducer from './Slices/refreshUsers';
 import CallerNameReducer from './Slices/callerNameSlice';
 import isProfileUpdatedReducer from './Slices/isProfileUpdated';
 import isResetReducer from './Slices/isReset';
+import usersSliceReducer from './Slices/usersSlice';
 
 
 
@@ -14,6 +15,7 @@ const store = configureStore({
         refreshUsers: refreshUsersReducer,
         isProfileUpdated: isProfileUpdatedReducer,
         isReset: isResetReducer,
+        usersSlice: usersSliceReducer,
     }
 })
 

@@ -17,7 +17,6 @@ export const UsersItem = ({ item, userId }: any) => {
             username: item?.username,
             userId,
             receiverId: item?._id,
-            receiverImage: item?.profilePhoto,
           },
         })
       }

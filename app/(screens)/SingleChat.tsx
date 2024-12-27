@@ -35,6 +35,8 @@ import { setIsUsersRefresh } from "@/Slices/refreshUsers";
 import { useDispatch } from "react-redux";
 import { Audio } from "expo-av";
 import { playReceiveMessageSound } from "@/constants/soundsFiles";
+import { useSelector } from "react-redux";
+import { RootType } from "@/store";
 
 const SingleChat = () => {
   const { t, direction }: any = useRTL();
@@ -56,6 +58,7 @@ const SingleChat = () => {
   const [callerSignal, setCallerSignal] = useState<object | null>(null);
   const [stream, setStream]: any = useState<object | null>(null);
   const [isReceiveCall, setIsReceiveCall] = useState<boolean>(false);
+  const [receiverImage, setReceiverImage]: any = useState(null);
   const [isMessageReceived, setIsMessageReceived] = useState<boolean>(false);
   const [messageToUpdate, setMessageToUpdate]: any = useState({
     _id: "",
@@ -71,10 +74,14 @@ const SingleChat = () => {
     `messages${params?.receiverId}`,
     isFirstRender
   );
+  const userFromRedux: any = useSelector(
+    (state: RootType) => state.usersSlice.users
+  );
 
   /* handle go back */
   const handleGoBack = () => {
     setIsFirstRender(false);
+    setReceiverImage(null);
     setMessages({ messages: [], total: 0 });
     router.push({ pathname: "/" });
   };
@@ -235,6 +242,17 @@ const SingleChat = () => {
     if (success) dispatch(setIsUsersRefresh(true));
   }, [success]);
 
+  /* Search for receiver image in redux */
+  useFocusEffect(
+    useCallback(() => {
+      userFromRedux.forEach((ele: any) => {
+        if (ele?._id === params?.receiverId) {
+          setReceiverImage(ele?.profilePhoto);
+        }
+      });
+    }, [userFromRedux])
+  );
+
   /* Show loading on center */
   if (loading && !messages?.messages?.length) {
     return (
@@ -282,6 +300,7 @@ const SingleChat = () => {
                   item={item}
                   myData={myData}
                   direction={direction}
+                  receiverImage={receiverImage}
                   {...params}
                 />
               </View>

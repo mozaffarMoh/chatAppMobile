@@ -22,6 +22,7 @@ import { RootType } from "@/store";
 import { setIsUsersRefresh } from "@/Slices/refreshUsers";
 import { setIsProfileUpdated } from "@/Slices/isProfileUpdated";
 import { setIsReset } from "@/Slices/isReset";
+import { setUsersSlice } from "@/Slices/usersSlice";
 
 const Main = () => {
   const dispatch = useDispatch();
@@ -102,13 +103,18 @@ const Main = () => {
 
   /* store myData in storage if exist */
   useEffect(() => {
-    if (users?.users && !myData) {
+    if (users?.users) {
+      let usersForStoreInRedux: any = [];
       users?.users?.forEach((item: any) => {
         if (item._id == userId) {
           AsyncStorage.setItem("myData", JSON.stringify(item));
           setMyData(item);
+        } else {
+          usersForStoreInRedux.push(item);
         }
       });
+
+      dispatch(setUsersSlice(usersForStoreInRedux));
     }
   }, [users, myData, userId]);
 
