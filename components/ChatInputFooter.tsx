@@ -17,6 +17,7 @@ import { ActivityIndicator } from "react-native-paper";
 import { Audio } from "expo-av";
 import { playSendMessageSound } from "@/constants/soundsFiles";
 import RecordingAudio from "./RecordingAudio";
+import EmojiModal from "./EmojiModal";
 
 export const ChatInputFooter = ({
   direction,
@@ -55,11 +56,7 @@ export const ChatInputFooter = ({
   };
 
   const handleEmojiSelected = (emoji: any) => {
-    console.log("emojie : ", emoji?.native);
     setMessage((currentText) => currentText + emoji?.native);
-
-    // const currentText = inputRef?.current.state.text;
-    // inputRef?.current.setState({ text: currentText + emoji });
   };
 
   const handleTypeMessage = (text: string) => {
@@ -73,7 +70,7 @@ export const ChatInputFooter = ({
   }, [successMessageSent]);
 
   if (message) {
-    console.log(message?.slice(0, 100));
+    //console.log(message?.slice(0, 100));
   }
 
   return (
@@ -105,27 +102,18 @@ export const ChatInputFooter = ({
         <Ionicons name="mic" size={30} color={thirdColor} />
       </TouchableOpacity>
       <TouchableOpacity onPress={handleEmojiPress}>
-        <Ionicons name="happy-outline" size={30} color={thirdColor} />
+        <Ionicons
+          name={isEmojiPickerVisible ? "happy" : "happy-outline"}
+          size={30}
+          color={thirdColor}
+        />
       </TouchableOpacity>
 
-      {isEmojiPickerVisible && (
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={isEmojiPickerVisible}
-          onRequestClose={() => setIsEmojiPickerVisible(false)}
-        >
-          <View style={styles.emojiPickerModal}>
-            <Picker set="apple" native={true} onSelect={handleEmojiSelected} />
-            <Ionicons
-              onPress={() => setIsEmojiPickerVisible(false)}
-              name="close-circle"
-              size={50}
-              color="#fd9"
-            />
-          </View>
-        </Modal>
-      )}
+      <EmojiModal
+        isVisible={isEmojiPickerVisible}
+        handleCloseModal={() => setIsEmojiPickerVisible(false)}
+        onSelect={handleEmojiSelected}
+      />
 
       <RecordingAudio
         isVisible={openRecordingModal}

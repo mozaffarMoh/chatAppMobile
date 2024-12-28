@@ -35,10 +35,11 @@ const useGet = (endPoint: string): any => {
 
             setLoading(false);
         }).catch((err: any) => {
-            if (axios.isCancel(err)) {
-                console.log("Request canceled:", endPoint);
-                return;
-            } else if (err.name === "AbortError") {
+            /*    if (axios.isCancel(err)) {
+                   console.log("Request canceled:", endPoint);
+                   return;
+               } else */
+            if (err.name === "AbortError") {
                 console.log("Request aborted:", endPoint);
                 return;
             } else {

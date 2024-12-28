@@ -2,7 +2,7 @@ import { endPoint } from "@/api/endPoint";
 import { primaryColor, secondaryColor, thirdColor } from "@/constants/colors";
 import { useDelete, usePut } from "@/custom-hooks";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Modal,
@@ -10,8 +10,10 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
+import EmojiModal from "./EmojiModal";
 
 const MessageUpdate = ({
   t,
@@ -22,8 +24,8 @@ const MessageUpdate = ({
   message,
   setReadyToGetMessages,
 }: any) => {
-  const [updatedMessage, setUpdatedMessage] = React.useState<string>("");
-
+  const [updatedMessage, setUpdatedMessage] = useState<string>("");
+  const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
   const [handleDelete, loadingDelete, errorDelete, successDelete] = useDelete(
     endPoint.deleteMessage + messageToUpdate?._id
   );
@@ -47,6 +49,14 @@ const MessageUpdate = ({
   const handleClose = () => {
     setMessageToUpdate({ _id: "", message: "" });
     handleCloseModal();
+  };
+
+  const handleEmojiPress = () => {
+    setIsEmojiPickerVisible(!isEmojiPickerVisible);
+  };
+
+  const handleEmojiSelected = (emoji: any) => {
+    setUpdatedMessage((currentText) => currentText + emoji?.native);
   };
 
   return (
@@ -91,13 +101,32 @@ const MessageUpdate = ({
               )}
             </Pressable>
           </View>
-          <TextInput
-            style={styles.textInput}
-            placeholder={t("placeholder.updateMessage")}
-            placeholderTextColor={"#aaa"}
-            multiline
-            value={updatedMessage}
-            onChangeText={(text: string) => setUpdatedMessage(text)}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Update your message"
+              placeholderTextColor={"#aaa"}
+              multiline
+              value={updatedMessage}
+              onChangeText={(text: string) => setUpdatedMessage(text)}
+            />
+            <TouchableOpacity
+              onPress={handleEmojiPress}
+              style={styles.emojiIcon}
+            >
+              <Ionicons
+                name={isEmojiPickerVisible ? "happy" : "happy-outline"}
+                size={30}
+                color={"#ddd"}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <EmojiModal
+            isVisible={isEmojiPickerVisible}
+            handleCloseModal={() => setIsEmojiPickerVisible(false)}
+            onSelect={handleEmojiSelected}
+            isUpdateMessage={true}
           />
         </View>
       </View>
@@ -147,14 +176,31 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
   },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+  },
   textInput: {
-    backgroundColor: '#ddd',
+    flex: 1,
+    fontSize: 16,
+    color: "#000",
+  },
+  emojiIcon: {
+    position: "absolute",
+    right: 5,
+  } /* 
+  textInput: {
+    backgroundColor: "#ddd",
     color: thirdColor,
-    fontWeight:600,
+    fontWeight: 600,
     width: 200,
     borderRadius: 5,
     padding: 20,
-  },
+  }, */,
 });
 
 export default MessageUpdate;

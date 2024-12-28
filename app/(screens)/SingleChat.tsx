@@ -53,6 +53,7 @@ const SingleChat = () => {
   const [isVideoCall, setIsVideoCall]: any = useState(false);
   const [isCallStart, setIsCallStart] = useState<boolean>(false);
   const socketRef = useRef<any>(null);
+  const flatListRef = useRef<FlatList>(null); // Ref for FlatList
   const [name, setName] = useState<string>("");
   const [caller, setCaller] = useState<string>("");
   const [callerSignal, setCallerSignal] = useState<object | null>(null);
@@ -60,6 +61,7 @@ const SingleChat = () => {
   const [isReceiveCall, setIsReceiveCall] = useState<boolean>(false);
   const [receiverImage, setReceiverImage]: any = useState(null);
   const [isMessageReceived, setIsMessageReceived] = useState<boolean>(false);
+  const [isFirstGetMessages, setIsFirstGetMessages] = useState(false); // Tracks if we've scrolled initially
   const [messageToUpdate, setMessageToUpdate]: any = useState({
     _id: "",
     message: "",
@@ -68,22 +70,28 @@ const SingleChat = () => {
     endPoint.allMessages +
       `?userId=${params?.userId}&receiverId=${params?.receiverId}&page=${page}`
   );
-  const [messagesCache]: any = useSQList(
+
+  /* 
+   const [messagesCache]: any = useSQList(
     messages?.messages,
     getMessages,
     `messages${params?.receiverId}`,
     isFirstRender
   );
-  const userFromRedux: any = useSelector(
+  */
+
+  const usersFromRedux: any = useSelector(
     (state: RootType) => state.usersSlice.users
   );
 
   /* handle go back */
   const handleGoBack = () => {
     setIsFirstRender(false);
+    setIsFirstGetMessages(false);
     setReceiverImage(null);
+    setPage(2);
     setMessages({ messages: [], total: 0 });
-    router.push({ pathname: "/" });
+    router.push("/");
   };
 
   // Check the network status
@@ -155,14 +163,12 @@ const SingleChat = () => {
   /* initil the first mount */
   useFocusEffect(
     useCallback(() => {
-      setMessages({ messages: [], total: 0 });
-      page > 2 && setPage(2);
       setIsFirstRender(true);
     }, [])
   );
 
   useEffect(() => {
-    getMessages();
+    isFirstRender && getMessages();
   }, [page, isFirstRender]);
 
   const handleLoadMore = () => {
@@ -238,20 +244,25 @@ const SingleChat = () => {
     };
   }, []);
 
-  useEffect(() => {
-    if (success) dispatch(setIsUsersRefresh(true));
-  }, [success]);
-
   /* Search for receiver image in redux */
   useFocusEffect(
     useCallback(() => {
-      userFromRedux.forEach((ele: any) => {
+      usersFromRedux.forEach((ele: any) => {
         if (ele?._id === params?.receiverId) {
           setReceiverImage(ele?.profilePhoto);
         }
       });
-    }, [userFromRedux])
+    }, [isFirstRender])
   );
+
+  /* refersh users and scroll to bottom when first success */
+  useEffect(() => {
+    if (success && !isFirstGetMessages) {
+      dispatch(setIsUsersRefresh(true));
+      flatListRef.current?.scrollToEnd({ animated: true });
+      setIsFirstGetMessages(true); // Ensure it happens only on first fetch
+    }
+  }, [success]);
 
   /* Show loading on center */
   if (loading && !messages?.messages?.length) {
@@ -266,112 +277,114 @@ const SingleChat = () => {
         <ActivityIndicator color={"#fff"} />
       </View>
     );
-  }
-
-  return (
-    <View style={styles.container}>
-      <GestureHandlerRootView>
-        <FlatList
-          data={isOnline ? messages?.messages : messagesCache}
-          renderItem={({ item }: any) => (
-            <LongPressGestureHandler
-              onHandlerStateChange={({ nativeEvent }) => {
-                if (
-                  nativeEvent.state === State.ACTIVE &&
-                  item?.sender === myData?._id
-                ) {
-                  setShowMesseageUpdate(true);
-                  setMessageToUpdate({
-                    _id: item?._id,
-                    message: item?.message,
-                  });
-                }
-              }}
-            >
-              <View
-                style={{
-                  backgroundColor:
-                    item?._id == messageToUpdate?._id
-                      ? thirdColor + "88"
-                      : secondaryColor,
+  } else {
+    return (
+      <View style={styles.container}>
+        <GestureHandlerRootView>
+          <FlatList
+            ref={flatListRef}
+            data={messages?.messages}
+            renderItem={({ item }: any) => (
+              <LongPressGestureHandler
+                onHandlerStateChange={({ nativeEvent }) => {
+                  if (
+                    nativeEvent.state === State.ACTIVE &&
+                    item?.sender === myData?._id &&
+                    !item?.isAudio
+                  ) {
+                    setShowMesseageUpdate(true);
+                    setMessageToUpdate({
+                      _id: item?._id,
+                      message: item?.message,
+                    });
+                  }
                 }}
               >
-                <SingleChatItem
-                  item={item}
-                  myData={myData}
-                  direction={direction}
-                  receiverImage={receiverImage}
-                  {...params}
-                />
-              </View>
-            </LongPressGestureHandler>
-          )}
-          maintainVisibleContentPosition={{
-            minIndexForVisible: 0,
-          }}
-          keyExtractor={(item: any) => item?._id}
-          style={[styles.flatList]}
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: "flex-end", // Centers content if empty
-          }}
-          onStartReached={handleLoadMore}
-          onStartReachedThreshold={0.1}
-          ListEmptyComponent={
-            success && (
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>{t("messages.hello")} 🚀</Text>
-              </View>
-            )
-          }
-          ListHeaderComponent={
-            loading ? <ActivityIndicator color={"#fff"} /> : null
-          }
+                <View
+                  style={{
+                    backgroundColor:
+                      item?._id == messageToUpdate?._id
+                        ? thirdColor + "88"
+                        : secondaryColor,
+                  }}
+                >
+                  <SingleChatItem
+                    item={item}
+                    myData={myData}
+                    direction={direction}
+                    receiverImage={receiverImage}
+                    {...params}
+                  />
+                </View>
+              </LongPressGestureHandler>
+            )}
+            maintainVisibleContentPosition={{
+              minIndexForVisible: 0,
+            }}
+            keyExtractor={(item: any) => item?._id}
+            style={[styles.flatList]}
+            contentContainerStyle={{
+              flexGrow: 1,
+              justifyContent: "flex-end", // Centers content if empty
+            }}
+            onStartReached={handleLoadMore}
+            onStartReachedThreshold={0.1}
+            ListEmptyComponent={
+              success && (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>{t("messages.hello")} 🚀</Text>
+                </View>
+              )
+            }
+            ListHeaderComponent={
+              loading ? <ActivityIndicator color={"#fff"} /> : null
+            }
+          />
+        </GestureHandlerRootView>
+        {/* ChatInputFooter moved here */}
+        <ChatInputFooter
+          direction={direction}
+          t={t}
+          {...params}
+          setReadyToGetMessages={setReadyToGetMessages}
+          socketRef={socketRef}
         />
-      </GestureHandlerRootView>
-      {/* ChatInputFooter moved here */}
-      <ChatInputFooter
-        direction={direction}
-        t={t}
-        {...params}
-        setReadyToGetMessages={setReadyToGetMessages}
-        socketRef={socketRef}
-      />
 
-      <MessageUpdate
-        t={t}
-        messageToUpdate={messageToUpdate}
-        setMessageToUpdate={setMessageToUpdate}
-        isVisible={showMesseageUpdate}
-        setReadyToGetMessages={setReadyToGetMessages}
-        handleCloseModal={() => setShowMesseageUpdate(false)}
-      />
+        <MessageUpdate
+          t={t}
+          messageToUpdate={messageToUpdate}
+          setMessageToUpdate={setMessageToUpdate}
+          isVisible={showMesseageUpdate}
+          setReadyToGetMessages={setReadyToGetMessages}
+          handleCloseModal={() => setShowMesseageUpdate(false)}
+        />
 
-      <CallSection
-        t={t}
-        isVisible={isAudioCall || isVideoCall}
-        isAudioCall={isAudioCall}
-        isVideoCall={isVideoCall}
-        handleCloseModal={
-          isAudioCall
-            ? () => setIsAudioCall(false)
-            : isVideoCall
-              ? () => setIsVideoCall(false)
-              : null
-        }
-        myData={myData}
-        name={name}
-        caller={caller}
-        stream={stream}
-        callerSignal={callerSignal}
-        isReceiveCall={isReceiveCall}
-        isCallStart={isCallStart}
-        setIsCallStart={setIsCallStart}
-        setIsReceiveCall={setIsReceiveCall}
-        {...params}
-      />
-    </View>
-  );
+        <CallSection
+          t={t}
+          isVisible={isAudioCall || isVideoCall}
+          isAudioCall={isAudioCall}
+          isVideoCall={isVideoCall}
+          handleCloseModal={
+            isAudioCall
+              ? () => setIsAudioCall(false)
+              : isVideoCall
+                ? () => setIsVideoCall(false)
+                : null
+          }
+          myData={myData}
+          name={name}
+          caller={caller}
+          stream={stream}
+          callerSignal={callerSignal}
+          isReceiveCall={isReceiveCall}
+          isCallStart={isCallStart}
+          setIsCallStart={setIsCallStart}
+          setIsReceiveCall={setIsReceiveCall}
+          {...params}
+        />
+      </View>
+    );
+  }
 };
 
 export default SingleChat;
