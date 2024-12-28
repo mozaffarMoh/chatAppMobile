@@ -1,6 +1,6 @@
 import { endPoint } from "@/api/endPoint";
 import { ChatInputFooter } from "@/components/ChatInputFooter";
-import { SingleChatItem } from "@/components/SingleChatItem";
+import SingleChatItem from "@/components/SingleChatItem";
 import { primaryColor, secondaryColor, thirdColor } from "@/constants/colors";
 import { getItemFromStorage } from "@/constants/getItemFromStorage";
 import { useGet, useSQList } from "@/custom-hooks";

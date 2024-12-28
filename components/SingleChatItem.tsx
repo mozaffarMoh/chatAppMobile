@@ -3,11 +3,11 @@ import { Button, Image, StyleSheet, Text, View } from "react-native";
 import { Surface } from "react-native-paper";
 import dayjs from "dayjs";
 import { Audio } from "expo-av";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import * as FileSystem from "expo-file-system";
 
-export const SingleChatItem = ({ item, myData, direction,receiverImage }: any) => {
+const SingleChatItem = ({ item, myData, direction, receiverImage }: any) => {
   const isSender = item?.sender === myData?._id;
   const isAudio = item?.isAudio === true;
   const backgroundColor = isSender ? primaryColor : thirdColor;
@@ -132,3 +132,5 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 });
+
+export default memo(SingleChatItem);
