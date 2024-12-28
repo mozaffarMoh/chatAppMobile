@@ -111,6 +111,7 @@ const Login = () => {
       default:
         "202948221783-slvgg9nuv7dl6103vgpop136eej0rnkf.apps.googleusercontent.com",
     }),
+    //this for web :  202948221783-m98hb00hfk2d0v73bqrrev24f0ubui74.apps.googleusercontent.com
     redirectUri: makeRedirectUri({
       scheme: "com.feras123.testlatest",
       native:'android',
