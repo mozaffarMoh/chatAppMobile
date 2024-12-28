@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "com.feras123.testlatest",
-    "slug": "com.feras123.testlatest",
+    "slug": "chatapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/favicon.png",
