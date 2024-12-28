@@ -9,13 +9,6 @@
       "distribution": "internal",
       "channel": "development"
     },
-    "development-simulator": {
-      "developmentClient": true,
-      "distribution": "internal",
-      "ios": {
-        "simulator": true
-      }
-    },
     "preview": {
       "android": {
         "buildType": "apk"
@@ -30,8 +23,5 @@
   },
   "submit": {
     "production": {}
-  }
-}}
-}tion": {}
   }
 }
