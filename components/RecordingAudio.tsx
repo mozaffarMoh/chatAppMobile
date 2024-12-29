@@ -6,21 +6,22 @@ import { Modal, StyleSheet, Text, View, Alert, Button } from "react-native";
 import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
 
+let recording: any = new Audio.Recording();
+
 const RecordingAudio = ({
   isVisible,
   handleCloseModal,
-  message,
   setMessage,
   handleSendMessage,
   setDuration,
   isRTL,
 }: any) => {
   const [recordTime, setRecordTime] = useState({ minutes: 0, seconds: 0 });
-  const [recording, setRecording]: any = useState(undefined);
-  const [permissionResponse, requestPermission]: any = Audio.usePermissions();
+  const [isReadyToSentAudio, setIsReadyToSentAudio] = useState(false);
 
   /* Start the timer */
   useEffect(() => {
+    startRecording();
     let intervalId: any;
     if (isVisible) {
       intervalId = setInterval(() => {
@@ -42,86 +43,59 @@ const RecordingAudio = ({
     return () => clearInterval(intervalId);
   }, [isVisible]);
 
-  /* Start recording */
-  const startRecording = async () => {
+  async function startRecording() {
+    if (recording) {
+      recording._cleanupForUnloadedRecorder();
+      recording = null;
+    }
     try {
-      if (permissionResponse.status !== "granted") {
-        console.log("Requesting permission..");
-        await requestPermission();
-      }
+      recording = new Audio.Recording();
+      await Audio.requestPermissionsAsync();
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
       });
-
-      // Configure audio settings
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
-
-      // Start recording
-      const { recording }: any = await Audio.Recording.createAsync(
+      await recording.prepareToRecordAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY
-      )
-        .then((res) => {
-          console.log("res : ", res);
-        })
-        .catch((err) => {
-          console.log("err : ", err);
-        });
-      setRecording(recording);
-    } catch (error) {
-      console.error("Failed to start recording:", error);
+      );
+      await recording.startAsync();
+    } catch (err) {
+      console.error("Failed to start recording", err);
     }
-  };
-
-  /* Stop and save recording */
-  const stopAndSaveRecording = async () => {
-    try {
-      await recording.stopAndUnloadAsync();
-
-      // Get record URI
-      const uri = recording.getURI();
-      if (!uri) return;
-
-      // Convert to base64
-      const base64Audio: any = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-
-      // Save base64 audio in the `setMessage` state
-      setMessage(`data:audio/webm;base64,${base64Audio}`);
-      handleClose();
-    } catch (error) {
-      console.error("Failed to stop recording:", error);
-    }
-  };
+  }
 
   async function stopRecording() {
-    console.log("Stopping recording..");
-    setRecording(undefined);
     await recording.stopAndUnloadAsync();
     await Audio.setAudioModeAsync({
       allowsRecordingIOS: false,
     });
     const uri = recording.getURI();
-    console.log("Recording stopped and stored at", uri);
+    const status = await recording.getStatusAsync();
+    const durationMillis = status.durationMillis;
+
+    setDuration(durationMillis / 1000);
+    const base64Audio: any = await FileSystem.readAsStringAsync(uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+
+    setMessage(`data:audio/webm;base64,${base64Audio}`);
+    setIsReadyToSentAudio(true);
   }
 
   /* Close the modal */
   const handleClose = async () => {
-    //await recording.stopAndUnloadAsync();
-    //setRecord(null);
+    await recording._cleanupForUnloadedRecorder();
     handleCloseModal();
     setRecordTime({ minutes: 0, seconds: 0 });
   };
 
   useEffect(() => {
-    if (message && isVisible) {
+    if (isReadyToSentAudio) {
       handleSendMessage();
+      setIsReadyToSentAudio(false);
+      handleClose();
     }
-  }, [isVisible, message]);
+  }, [isVisible, isReadyToSentAudio]);
 
   return (
     <Modal
@@ -149,11 +123,6 @@ const RecordingAudio = ({
             autoPlay
             loop
             style={styles.animation}
-          />
-          <Ionicons
-            name={recording ? "stop-circle" : "play-circle"}
-            size={30}
-            onPress={() => (recording ? stopRecording() : startRecording())}
           />
 
           {/* Timer */}

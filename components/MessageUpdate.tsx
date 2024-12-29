@@ -88,39 +88,43 @@ const MessageUpdate = ({
                 </Text>
               )}
             </Pressable>
-            <Pressable
-              style={[styles.updateButton, styles.editButton]}
-              onPress={handleEdit}
-            >
-              {loadingEdit ? (
-                <ActivityIndicator />
-              ) : (
-                <Text style={styles.modalButtonText}>
-                  {t("buttons.editMessage")}
-                </Text>
-              )}
-            </Pressable>
+            {messageToUpdate?.message && (
+              <Pressable
+                style={[styles.updateButton, styles.editButton]}
+                onPress={handleEdit}
+              >
+                {loadingEdit ? (
+                  <ActivityIndicator />
+                ) : (
+                  <Text style={styles.modalButtonText}>
+                    {t("buttons.editMessage")}
+                  </Text>
+                )}
+              </Pressable>
+            )}
           </View>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Update your message"
-              placeholderTextColor={"#aaa"}
-              multiline
-              value={updatedMessage}
-              onChangeText={(text: string) => setUpdatedMessage(text)}
-            />
-            <TouchableOpacity
-              onPress={handleEmojiPress}
-              style={styles.emojiIcon}
-            >
-              <Ionicons
-                name={isEmojiPickerVisible ? "happy" : "happy-outline"}
-                size={30}
-                color={"#ddd"}
+          {messageToUpdate?.message && (
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Update your message"
+                placeholderTextColor={"#aaa"}
+                multiline
+                value={updatedMessage}
+                onChangeText={(text: string) => setUpdatedMessage(text)}
               />
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity
+                onPress={handleEmojiPress}
+                style={styles.emojiIcon}
+              >
+                <Ionicons
+                  name={isEmojiPickerVisible ? "happy" : "happy-outline"}
+                  size={30}
+                  color={"#ddd"}
+                />
+              </TouchableOpacity>
+            </View>
+          )}
 
           <EmojiModal
             isVisible={isEmojiPickerVisible}
@@ -192,15 +196,7 @@ const styles = StyleSheet.create({
   emojiIcon: {
     position: "absolute",
     right: 5,
-  } /* 
-  textInput: {
-    backgroundColor: "#ddd",
-    color: thirdColor,
-    fontWeight: 600,
-    width: 200,
-    borderRadius: 5,
-    padding: 20,
-  }, */,
+  },
 });
 
 export default MessageUpdate;

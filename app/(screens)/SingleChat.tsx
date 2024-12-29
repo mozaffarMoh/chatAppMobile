@@ -264,6 +264,16 @@ const SingleChat = () => {
     }
   }, [success]);
 
+  const onHoldItemToUpdate = (nativeEvent: any, item: any) => {
+    if (nativeEvent.state === State.ACTIVE && item?.sender === myData?._id) {
+      setShowMesseageUpdate(true);
+      setMessageToUpdate({
+        _id: item?._id,
+        message: item?.isAudio ? "" : item?.message,
+      });
+    }
+  };
+
   /* Show loading on center */
   if (loading && !messages?.messages?.length) {
     return (
@@ -286,19 +296,9 @@ const SingleChat = () => {
             data={messages?.messages}
             renderItem={({ item }: any) => (
               <LongPressGestureHandler
-                onHandlerStateChange={({ nativeEvent }) => {
-                  if (
-                    nativeEvent.state === State.ACTIVE &&
-                    item?.sender === myData?._id &&
-                    !item?.isAudio
-                  ) {
-                    setShowMesseageUpdate(true);
-                    setMessageToUpdate({
-                      _id: item?._id,
-                      message: item?.message,
-                    });
-                  }
-                }}
+                onHandlerStateChange={({ nativeEvent }) =>
+                  onHoldItemToUpdate(nativeEvent, item)
+                }
               >
                 <View
                   style={{

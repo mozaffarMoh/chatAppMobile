@@ -30,13 +30,12 @@ export const ChatInputFooter = ({
   const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
   const [openRecordingModal, setOpenRecordingModal] = useState(false);
   const [message, setMessage] = useState("");
-  const [duration, setDuration] = useState("00:30");
+  const [duration, setDuration] = useState(0);
   const inputRef: any = useRef(null);
   const isRTL = direction == "rtl";
   const reverseDirection = isRTL ? "ltr" : "rtl";
-  const body = message?.startsWith("data:audio/webm;base64")
-    ? { message, isAudio: true, duration }
-    : { message };
+  const isAudio = message?.startsWith("data:audio/webm;base64");
+  const body = isAudio ? { message, isAudio: true, duration } : { message };
   const [sendMessagePost, loadingSendMessage, successMessageSent] = usePost(
     `${endPoint.sendMessage}?userId=${userId}&receiverId=${receiverId}`,
     body
@@ -45,9 +44,10 @@ export const ChatInputFooter = ({
   const handleSendMessage = () => {
     if (message) {
       playSendMessageSound();
-      setMessage("");
       socketRef.current.emit("sendMessage", receiverId);
       sendMessagePost();
+      setMessage("");
+      setDuration(0);
     }
   };
 
@@ -69,10 +69,6 @@ export const ChatInputFooter = ({
     }
   }, [successMessageSent]);
 
-  if (message) {
-    //console.log(message?.slice(0, 100));
-  }
-
   return (
     <View style={[styles.footerContainer, { direction: reverseDirection }]}>
       {loadingSendMessage ? (
@@ -92,7 +88,7 @@ export const ChatInputFooter = ({
         style={styles.textInput}
         placeholder={t("placeholder.chatInputPlaceholder")}
         multiline
-        value={message}
+        value={isAudio ? "" : message}
         onChangeText={handleTypeMessage}
       />
       <TouchableOpacity
