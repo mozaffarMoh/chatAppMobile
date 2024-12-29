@@ -1,20 +1,26 @@
 import { primaryColor, secondaryColor, thirdColor } from "@/constants/colors";
-import { Button, Image, StyleSheet, Text, View } from "react-native";
+import { Animated, Button, Image, StyleSheet, Text, View } from "react-native";
 import { Surface } from "react-native-paper";
 import dayjs from "dayjs";
 import { Audio } from "expo-av";
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import * as FileSystem from "expo-file-system";
 
+let sound: Audio.Sound | undefined;
+
 const SingleChatItem = ({ item, myData, direction, receiverImage }: any) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(item?.duration || 0);
+  const soundInstanceRef = useRef<Audio.Sound | null>(null);
+  const progress = new Animated.Value(0);
   const isSender = item?.sender === myData?._id;
   const isAudio = item?.isAudio === true;
   const backgroundColor = isSender ? primaryColor : thirdColor;
   const position = direction == "ltr" ? "flex-end" : "flex-start";
   const reversePosition = direction == "ltr" ? "flex-start" : "flex-end";
   const reverseDirection = direction == "ltr" ? "rtl" : "ltr";
-  const [currectSound, setCurrentSound]: any = useState(null);
 
   const isImageExist = (data: any) => {
     if (typeof data == "string" && data) return { uri: data };
@@ -29,37 +35,76 @@ const SingleChatItem = ({ item, myData, direction, receiverImage }: any) => {
 
   const handlePlayAudio = async (base64Audio: string) => {
     try {
-      // Define a path for the temporary audio file
+      if (sound) {
+        await sound.stopAsync();
+        await sound.unloadAsync();
+        sound = undefined;
+      }
+      const soundInstance = new Audio.Sound();
+      const cleanedBase64Audio = base64Audio.replace(
+        /^data:audio\/\w+;base64,/,
+        ""
+      );
       const fileUri = `${FileSystem.cacheDirectory}temp-audio.mp3`;
-
-      // Write the base64 string to a file
-      await FileSystem.writeAsStringAsync(fileUri, base64Audio, {
+      await FileSystem.writeAsStringAsync(fileUri, cleanedBase64Audio, {
         encoding: FileSystem.EncodingType.Base64,
       });
+      // Load the audio file
+      const status: any = await soundInstance.loadAsync({ uri: fileUri });
 
-      // Load and play the audio
-      const { sound } = await Audio.Sound.createAsync({ uri: fileUri });
+      setDuration(status?.durationMillis / 1000);
 
-      setCurrentSound(sound);
-      await sound.playAsync();
+      // Check if the audio was successfully loaded
+      if (!status.isLoaded) {
+        throw new Error("Audio failed to load.");
+      }
+
+      // Play the audio
+      await soundInstance.playAsync();
+      sound = soundInstance;
+      setIsPlaying(true);
+
+      // Monitor playback progress
+      soundInstance.setOnPlaybackStatusUpdate((status: any) => {
+        if (status.isLoaded) {
+          setCurrentTime(status.positionMillis / 1000);
+
+          // Update progress bar smoothly
+          Animated.timing(progress, {
+            toValue: status.positionMillis / status.durationMillis,
+            duration: 100,
+            useNativeDriver: false,
+          }).start();
+
+          if (status.didJustFinish) {
+            setIsPlaying(false);
+            sound = undefined;
+          }
+        }
+      });
     } catch (error) {
       console.error("Error playing audio:", error);
     }
   };
 
   const handlePauseAudio = async () => {
-    if (currectSound) {
-      await currectSound.unloadAsync();
-      setCurrentSound(null);
+    if (sound) {
+      await sound.stopAsync();
+      sound = undefined;
+      setIsPlaying(false);
+      console.log("success stop");
     }
   };
+
   useEffect(() => {
-    return currectSound
-      ? () => {
-          currectSound.unloadAsync();
-        }
-      : undefined;
-  }, [currectSound]);
+    return () => {
+      // Clean up the sound instance on unmount
+      if (soundInstanceRef.current) {
+        soundInstanceRef.current.unloadAsync();
+        soundInstanceRef.current = null;
+      }
+    };
+  }, []);
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -81,24 +126,34 @@ const SingleChatItem = ({ item, myData, direction, receiverImage }: any) => {
       <Image source={imageURL} style={styles.profileImage} />
 
       <View>
-        <Text style={styles.message}>
-          {isAudio ? (
-            <View>
-              <Ionicons
-                name={currectSound ? "stop-circle" : "play-circle"}
-                size={30}
-                onPress={() =>
-                  currectSound
-                    ? handlePauseAudio()
-                    : handlePlayAudio(item?.message)
-                }
+        {isAudio ? (
+          <View style={styles.audioContainer}>
+            <Ionicons
+              name={isPlaying ? "stop-circle" : "play-circle"}
+              size={30}
+              onPress={() =>
+                isPlaying ? handlePauseAudio() : handlePlayAudio(item?.message)
+              }
+            />
+            <Text>{formatTime(item?.duration)}</Text>
+            {/* Progress Bar */}
+            <View style={styles.progressContainer}>
+              <Animated.View
+                style={[
+                  styles.progressBar,
+                  {
+                    width: progress.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ["0%", "100%"],
+                    }),
+                  },
+                ]}
               />
-              <Text>{formatTime(item?.duration)}</Text>
             </View>
-          ) : (
-            item?.message
-          )}
-        </Text>
+          </View>
+        ) : (
+          <Text style={styles.message}>{item?.message}</Text>
+        )}
         <Text style={styles.time}>
           {dayjs(item.timestamp).format("DD-MM-YYYY || HH:mm a")}
         </Text>
@@ -130,6 +185,21 @@ const styles = StyleSheet.create({
     color: "#eeeeee",
     fontSize: 9,
     marginTop: 4,
+  },
+  audioContainer: {
+    width: "70%",
+  },
+  progressContainer: {
+    height: 5,
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  progressBar: {
+    height: "100%",
+    backgroundColor: thirdColor,
+    borderRadius: 5,
   },
 });
 

@@ -21,9 +21,9 @@ const RecordingAudio = ({
 
   /* Start the timer */
   useEffect(() => {
-    startRecording();
     let intervalId: any;
     if (isVisible) {
+      startRecording();
       intervalId = setInterval(() => {
         setRecordTime((prev) => {
           let newMinutes = prev.minutes;
