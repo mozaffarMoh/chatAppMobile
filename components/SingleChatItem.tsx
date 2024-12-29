@@ -11,12 +11,13 @@ let sound: Audio.Sound | undefined;
 
 const SingleChatItem = ({ item, myData, direction, receiverImage }: any) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentMessageId, setCurrentMessageId] = useState("");
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(item?.duration || 0);
   const soundInstanceRef = useRef<Audio.Sound | null>(null);
-  const progress = new Animated.Value(0);
-  const isSender = item?.sender === myData?._id;
+  const progress = useRef(new Animated.Value(0)).current;
+  const [lastPosition, setLastPosition] = useState(0);
   const isAudio = item?.isAudio === true;
+  const isSender = item?.sender === myData?._id;
   const backgroundColor = isSender ? primaryColor : thirdColor;
   const position = direction == "ltr" ? "flex-end" : "flex-start";
   const reversePosition = direction == "ltr" ? "flex-start" : "flex-end";
@@ -35,11 +36,16 @@ const SingleChatItem = ({ item, myData, direction, receiverImage }: any) => {
 
   const handlePlayAudio = async (base64Audio: string) => {
     try {
-      if (sound) {
-        await sound.stopAsync();
-        await sound.unloadAsync();
-        sound = undefined;
+      if (sound && currentMessageId === item?._id) {
+        const status = await sound.getStatusAsync();
+        if (status.isLoaded && !status.isPlaying) {
+          // Resume from last position if available
+          await sound.playFromPositionAsync(lastPosition);
+          setIsPlaying(true);
+          return;
+        }
       }
+      setCurrentMessageId(item?._id);
       const soundInstance = new Audio.Sound();
       const cleanedBase64Audio = base64Audio.replace(
         /^data:audio\/\w+;base64,/,
@@ -51,8 +57,6 @@ const SingleChatItem = ({ item, myData, direction, receiverImage }: any) => {
       });
       // Load the audio file
       const status: any = await soundInstance.loadAsync({ uri: fileUri });
-
-      setDuration(status?.durationMillis / 1000);
 
       // Check if the audio was successfully loaded
       if (!status.isLoaded) {
@@ -68,17 +72,12 @@ const SingleChatItem = ({ item, myData, direction, receiverImage }: any) => {
       soundInstance.setOnPlaybackStatusUpdate((status: any) => {
         if (status.isLoaded) {
           setCurrentTime(status.positionMillis / 1000);
-
-          // Update progress bar smoothly
-          Animated.timing(progress, {
-            toValue: status.positionMillis / status.durationMillis,
-            duration: 100,
-            useNativeDriver: false,
-          }).start();
+          progress.setValue(status.positionMillis / status.durationMillis); // Set the value directly
 
           if (status.didJustFinish) {
             setIsPlaying(false);
             sound = undefined;
+            progress.setValue(0);
           }
         }
       });
@@ -89,10 +88,12 @@ const SingleChatItem = ({ item, myData, direction, receiverImage }: any) => {
 
   const handlePauseAudio = async () => {
     if (sound) {
-      await sound.stopAsync();
-      sound = undefined;
-      setIsPlaying(false);
-      console.log("success stop");
+      const status = await sound.getStatusAsync();
+      if (status.isLoaded) {
+        setLastPosition(status.positionMillis); // Save the current position
+        await sound.pauseAsync(); // Pause instead of stopping
+        setIsPlaying(false);
+      }
     }
   };
 
@@ -117,6 +118,7 @@ const SingleChatItem = ({ item, myData, direction, receiverImage }: any) => {
       style={[
         styles.chatContainer,
         {
+          //shadowColor: "transparent",
           direction: isSender ? direction : reverseDirection,
           backgroundColor,
           alignSelf: isSender ? reversePosition : position,
@@ -130,32 +132,39 @@ const SingleChatItem = ({ item, myData, direction, receiverImage }: any) => {
           <View style={styles.audioContainer}>
             <Ionicons
               name={isPlaying ? "stop-circle" : "play-circle"}
-              size={30}
-              onPress={() =>
-                isPlaying ? handlePauseAudio() : handlePlayAudio(item?.message)
+              size={35}
+              onPress={
+                isPlaying
+                  ? handlePauseAudio
+                  : () => handlePlayAudio(item?.message)
               }
+              color={"#333"}
             />
-            <Text>{formatTime(item?.duration)}</Text>
-            {/* Progress Bar */}
-            <View style={styles.progressContainer}>
-              <Animated.View
-                style={[
-                  styles.progressBar,
-                  {
-                    width: progress.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: ["0%", "100%"],
-                    }),
-                  },
-                ]}
-              />
+            {/* Progress Bar and time*/}
+            <View style={styles.progressAndTimeContainer}>
+              <View style={styles.progressContainer}>
+                <Animated.View
+                  style={[
+                    styles.progressBar,
+                    {
+                      width: progress.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ["0%", "100%"],
+                      }),
+                    },
+                  ]}
+                />
+              </View>
+              <Text>
+                {formatTime(isPlaying ? currentTime : item?.duration)}
+              </Text>
             </View>
           </View>
         ) : (
           <Text style={styles.message}>{item?.message}</Text>
         )}
         <Text style={styles.time}>
-          {dayjs(item.timestamp).format("DD-MM-YYYY || HH:mm a")}
+          {dayjs(item.timestamp).format("DD-MM-YYYY || hh:mm a")}
         </Text>
       </View>
     </Surface>
@@ -187,18 +196,24 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   audioContainer: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 3,
+  },
+  progressAndTimeContainer: {
+    gap: 3,
     width: "70%",
   },
   progressContainer: {
     height: 5,
-    width: "100%",
     backgroundColor: "#fff",
     borderRadius: 5,
     marginTop: 10,
   },
   progressBar: {
     height: "100%",
-    backgroundColor: thirdColor,
+    backgroundColor: "#333",
     borderRadius: 5,
   },
 });

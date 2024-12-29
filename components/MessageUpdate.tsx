@@ -108,7 +108,7 @@ const MessageUpdate = ({
               <TextInput
                 style={styles.textInput}
                 placeholder="Update your message"
-                placeholderTextColor={"#aaa"}
+                placeholderTextColor={"#ccc"}
                 multiline
                 value={updatedMessage}
                 onChangeText={(text: string) => setUpdatedMessage(text)}
@@ -191,7 +191,8 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     fontSize: 16,
-    color: "#000",
+    color: "#eee",
+    paddingRight:30
   },
   emojiIcon: {
     position: "absolute",

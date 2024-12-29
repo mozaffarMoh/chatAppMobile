@@ -192,10 +192,10 @@ const SingleChat = () => {
   /* if user receive a message recall the messages */
   useEffect(() => {
     if (isMessageReceived) {
+      console.log("the message is received");
       playReceiveMessageSound();
       getMessages();
       dispatch(setIsUsersRefresh(true));
-      setIsMessageReceived(false);
     }
   }, [isMessageReceived]);
 
@@ -257,10 +257,13 @@ const SingleChat = () => {
 
   /* refersh users and scroll to bottom when first success */
   useEffect(() => {
-    if (success && !isFirstGetMessages) {
+    if (success && (!isFirstGetMessages || isMessageReceived)) {
       dispatch(setIsUsersRefresh(true));
-      flatListRef.current?.scrollToEnd({ animated: true });
-      setIsFirstGetMessages(true); // Ensure it happens only on first fetch
+      isMessageReceived && setIsMessageReceived(false);
+      !isFirstGetMessages && setIsFirstGetMessages(true);
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 500);
     }
   }, [success]);
 
