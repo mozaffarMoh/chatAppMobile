@@ -20,6 +20,8 @@ import {
   stopReceiveCallSound,
   stopSendCallSound,
 } from "@/constants/soundsFiles";
+import Peer from "peerjs";
+import { WebView } from "react-native-webview";
 
 const CallSection = ({
   t,
@@ -27,9 +29,9 @@ const CallSection = ({
   handleCloseModal,
   isAudioCall,
   isVideoCall,
-  CallerName,
   name,
   caller,
+  myData,
   callerSignal,
   stream,
   userId,
@@ -67,101 +69,101 @@ const CallSection = ({
   }, []);
 
   const callUser = async () => {
-    const peerConnection: any = new RTCPeerConnection();
-
-    // Add local stream tracks
-    if (stream) {
-      stream.getTracks().forEach((track: any) => {
-        peerConnection.addTrack(track, stream);
-      });
+    try {
+      const peer = new RTCPeerConnection();
+      console.log("peer success  : ", peer);
+    } catch (err) {
+      console.log("peer error is : ", err);
     }
-
-    // Listen for remote stream
-    peerConnection.ontrack = (event: any) => {
-      if (event.streams && event.streams[0]) {
-        remoteStreamRef.current.srcObject = event.streams[0];
-      }
-    };
-
-    // Emit signal when ready
-    peerConnection.onicecandidate = (event: any) => {
-      if (event.candidate) {
-        socketRef.current.emit("callUser", {
-          userToCall: receiverId,
-          voice: isAudioCall,
-          video: isVideoCall,
-          signalData: peerConnection.localDescription,
-          from: userId,
-          name: CallerName,
-        });
-      }
-    };
-
-    const offer = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(offer);
-
-    socketRef.current.on("callAccepted", async (data: any) => {
-      setCallAccepted(true);
-      await peerConnection.setRemoteDescription(
-        new RTCSessionDescription(data.signal)
-      );
+    socketRef.current.emit("callUser", {
+      userToCall: receiverId,
+      voice: isAudioCall,
+      video: isVideoCall,
+      from: userId,
+      name: myData?.username,
+      //signalData: data,
     });
 
-    connectionRef.current = peerConnection;
+    const handleStream = (stream: any) => {
+      console.log("stream inside : ", stream);
+
+      remoteStreamRef.current.srcObject = stream;
+    };
+
+    const handleCallAccepted = (data: any) => {
+      console.log("call accepted data : ", data);
+
+      setCallAccepted(true);
+    };
+
+    socketRef.current.on("stream", handleStream);
+
+    socketRef.current.on("error", (err: any) => {
+      console.error("PeerJS Error:", err);
+    });
+
+    socketRef.current.on("callAccepted", handleCallAccepted);
+    connectionRef.current = socketRef.current;
   };
-
-  useEffect(() => {
-    if (isCallStart) {
-      playSendCallSound();
-      callUser();
-    }
-  }, [isCallStart]);
-
-  useEffect(() => {
-    if (isReceiveCall) {
-      playReceiveCallSound();
-    }
-  }, [isReceiveCall]);
 
   const answerCall = async () => {
     stopReceiveCallSound();
     setCallAccepted(true);
     setCallTime({ minutes: 0, seconds: 0 });
 
-    const peerConnection: any = new RTCPeerConnection();
+    // Initialize PeerJS
+    const peer = new Peer("", {
+      host: "chatappapi-2w5v.onrender.com",
+      port: 3000,
+      path: "/",
+    });
 
-    // Add local stream tracks
-    if (stream) {
-      stream.getTracks().forEach((track: any) => {
-        peerConnection.addTrack(track, stream);
-      });
-    }
+    peer.on("open", (id) => {
+      console.log("PeerJS connected with ID:", id);
+    });
 
-    // Listen for remote stream
-    peerConnection.ontrack = (event: any) => {
-      if (event.streams && event.streams[0]) {
-        remoteStreamRef.current.srcObject = event.streams[0];
-      }
-    };
+    peer.on("call", (call) => {
+      // Answer the call with the local media stream
+      call.answer(stream);
 
-    // Emit signal when ready
-    peerConnection.onicecandidate = (event: any) => {
-      if (event.candidate) {
+      call.on("stream", async (remoteStream: any) => {
+        console.log("Receiving remote stream : ", remoteStream);
         socketRef.current.emit("answerCall", {
-          signal: peerConnection.localDescription,
           to: caller,
+          signal: remoteStream,
         });
-      }
-    };
+        // Use expo-av to play the remote audio stream
+        const soundObject = new Audio.Sound();
 
-    await peerConnection.setRemoteDescription(
-      new RTCSessionDescription(callerSignal)
-    );
-    const answer = await peerConnection.createAnswer();
-    await peerConnection.setLocalDescription(answer);
+        try {
+          await soundObject.loadAsync({ uri: remoteStream }); // Use the stream URL
+          await soundObject.playAsync();
+        } catch (error) {
+          console.error("Error playing remote audio:", error);
+        }
+      });
 
-    connectionRef.current = peerConnection;
+      call.on("error", (error) => {
+        console.error("Error during the call:", error);
+      });
+      call.on("close", () => {
+        console.log("Call closed");
+      });
+    });
+
+    // Store the peer connection
+    connectionRef.current = peer;
   };
+
+  useEffect(() => {
+    if (isReceiveCall) {
+      playReceiveCallSound();
+    }
+    if (isCallStart) {
+      playSendCallSound();
+      callUser();
+    }
+  }, [isReceiveCall, isCallStart]);
 
   const leaveCall = () => {
     stopSendCallSound();
@@ -223,17 +225,26 @@ const CallSection = ({
       <View style={styles.modalOverlay}>
         {callAccepted ? (
           <View style={styles.callContainer}>
-            <Video
-              source={{ uri: localStreamRef.current?.srcObject?.toURL() }}
-              style={styles.localStream}
-              resizeMode="contain"
-              muted
-            />
-            <Video
-              source={{ uri: remoteStreamRef.current?.srcObject?.toURL() }}
-              style={styles.remoteStream}
-              resizeMode="contain"
-            />
+            {!localStreamRef.current ? (
+              <Text>Loading Local Stream...</Text>
+            ) : (
+              <Video
+                source={{ uri: localStreamRef.current.srcObject.toURL() }}
+                style={styles.localStream}
+                resizeMode="contain"
+                muted
+              />
+            )}
+
+            {!remoteStreamRef.current ? (
+              <Text>Loading Remote Stream...</Text>
+            ) : (
+              <Video
+                source={{ uri: remoteStreamRef.current.srcObject.toURL() }}
+                style={styles.remoteStream}
+                resizeMode="contain"
+              />
+            )}
             <Text style={styles.callTimer}>
               {`${callTime.minutes < 10 ? "0" : ""}${callTime.minutes}:${
                 callTime.seconds < 10 ? "0" : ""

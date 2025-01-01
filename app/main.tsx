@@ -1,4 +1,4 @@
-import { useAuth } from "@/components/AuthProviders";
+import { useAuth } from "@/Context/AuthProvider"
 import DrawerContent from "@/components/DraweContent";
 import LanguageToggle from "@/components/LanguageToggle";
 import { primaryColor, secondaryColor, thirdColor } from "@/constants/colors";

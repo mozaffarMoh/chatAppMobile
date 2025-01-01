@@ -17,6 +17,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Modal,
   StyleSheet,
   Text,
   View,
@@ -34,12 +35,16 @@ import { io } from "socket.io-client";
 import { setIsUsersRefresh } from "@/Slices/refreshUsers";
 import { useDispatch } from "react-redux";
 import { Audio } from "expo-av";
+import { Camera } from "expo-camera";
 import { playReceiveMessageSound } from "@/constants/soundsFiles";
 import { useSelector } from "react-redux";
 import { RootType } from "@/store";
+import WebView from "react-native-webview";
+import { useMessagesCache } from "@/Context/MessagesProvider";
 
 const SingleChat = () => {
   const { t, direction }: any = useRTL();
+  const { messagesCache, setMessagesCache }: any = useMessagesCache();
   const navigation = useNavigation();
   const dispatch = useDispatch();
   let params: any = useLocalSearchParams();
@@ -60,6 +65,7 @@ const SingleChat = () => {
   const [stream, setStream]: any = useState<object | null>(null);
   const [isReceiveCall, setIsReceiveCall] = useState<boolean>(false);
   const [receiverImage, setReceiverImage]: any = useState(null);
+  const [receiverId, setReceiverId]: any = useState("");
   const [isMessageReceived, setIsMessageReceived] = useState<boolean>(false);
   const [isFirstGetMessages, setIsFirstGetMessages] = useState(false); // Tracks if we've scrolled initially
   const [messageToUpdate, setMessageToUpdate]: any = useState({
@@ -71,15 +77,6 @@ const SingleChat = () => {
       `?userId=${params?.userId}&receiverId=${params?.receiverId}&page=${page}`
   );
 
-  /* 
-   const [messagesCache]: any = useSQList(
-    messages?.messages,
-    getMessages,
-    `messages${params?.receiverId}`,
-    isFirstRender
-  );
-  */
-
   const usersFromRedux: any = useSelector(
     (state: RootType) => state.usersSlice.users
   );
@@ -89,6 +86,7 @@ const SingleChat = () => {
     setIsFirstRender(false);
     setIsFirstGetMessages(false);
     setReceiverImage(null);
+    setReceiverId("");
     setPage(2);
     setMessages({ messages: [], total: 0 });
     router.push("/");
@@ -168,13 +166,41 @@ const SingleChat = () => {
   );
 
   useEffect(() => {
-    isFirstRender && getMessages();
-  }, [page, isFirstRender]);
+    if (isFirstRender) {
+      setReceiverId(params?.receiverId);
+    }
+  }, [isFirstRender]);
+
+  useEffect(() => {
+    if (receiverId === params?.receiverId) {
+      if (!messagesCache?.[receiverId]) {
+        getMessages();
+      } else {
+        let savedPage = messagesCache?.[receiverId]?.page;
+        page < savedPage && setPage(savedPage);
+
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }, 500);
+      }
+    }
+  }, [receiverId]);
+
+  useEffect(() => {
+    if (
+      messagesCache?.[receiverId] &&
+      page > messagesCache?.[receiverId]?.page
+    ) {
+      getMessages();
+    }
+  }, [page]);
 
   const handleLoadMore = () => {
-    let usersLength = messages?.messages?.length;
-    let total = messages?.total;
-    if (total && usersLength < total) {
+    let total = messagesCache?.[receiverId]?.total;
+    let messagesLength = messagesCache?.[receiverId]?.messages?.length;
+    let isCanLoad = total && messagesLength < total;
+
+    if (isCanLoad) {
       setPage((prev: number) => prev + 1);
     }
   };
@@ -192,7 +218,6 @@ const SingleChat = () => {
   /* if user receive a message recall the messages */
   useEffect(() => {
     if (isMessageReceived) {
-      console.log("the message is received");
       playReceiveMessageSound();
       getMessages();
       dispatch(setIsUsersRefresh(true));
@@ -214,11 +239,12 @@ const SingleChat = () => {
 
     const handleReceiveMessage = (messageReceiverID: string) => {
       if (myData?._id == messageReceiverID) {
+        console.log("message is received");
         setIsMessageReceived(true);
       }
     };
 
-    const handleReceiveCall = (data: any) => {
+    const handleReceiveCall = async (data: any) => {
       if (myData?._id == data.userToCall) {
         setIsReceiveCall(true);
         setIsVideoCall(data.video);
@@ -228,12 +254,6 @@ const SingleChat = () => {
         setName(data.name);
       }
     };
-
-    /*   navigator?.mediaDevices
-      .getUserMedia({ video: true, audio: true })
-      .then((stream) => {
-        setStream(stream);
-      }); */
 
     socket.on("receiveMessage", handleReceiveMessage);
     socket.on("callUser", handleReceiveCall);
@@ -254,16 +274,29 @@ const SingleChat = () => {
       });
     }, [isFirstRender])
   );
-
+  
   /* refersh users and scroll to bottom when first success */
   useEffect(() => {
-    if (success && (!isFirstGetMessages || isMessageReceived)) {
-      dispatch(setIsUsersRefresh(true));
-      isMessageReceived && setIsMessageReceived(false);
-      !isFirstGetMessages && setIsFirstGetMessages(true);
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: true });
-      }, 500);
+    if (success) {
+      if (params?.receiverId === receiverId && isFirstRender) {
+        setMessagesCache({
+          ...messagesCache,
+          [receiverId]: {
+            messages: messages?.messages,
+            page: page,
+            total: messages?.total,
+          },
+        });
+      }
+
+      if (!isFirstGetMessages || isMessageReceived) {
+        dispatch(setIsUsersRefresh(true));
+        isMessageReceived && setIsMessageReceived(false);
+        !isFirstGetMessages && setIsFirstGetMessages(true);
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }, 500);
+      }
     }
   }, [success]);
 
@@ -291,12 +324,12 @@ const SingleChat = () => {
       </View>
     );
   } else {
-    return (
+    return receiverId === params?.receiverId && messagesCache?.[receiverId] ? (
       <View style={styles.container}>
         <GestureHandlerRootView>
           <FlatList
             ref={flatListRef}
-            data={messages?.messages}
+            data={messagesCache?.[receiverId]?.messages}
             renderItem={({ item }: any) => (
               <LongPressGestureHandler
                 onHandlerStateChange={({ nativeEvent }) =>
@@ -386,6 +419,8 @@ const SingleChat = () => {
           {...params}
         />
       </View>
+    ) : (
+      <View style={styles.subContainer}></View>
     );
   }
 };
@@ -393,6 +428,10 @@ const SingleChat = () => {
 export default SingleChat;
 
 const styles = StyleSheet.create({
+  subContainer: {
+    flex: 1,
+    backgroundColor: secondaryColor,
+  },
   container: {
     flex: 1,
   },

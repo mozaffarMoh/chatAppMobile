@@ -16,7 +16,7 @@ import { getItemFromStorage } from "@/constants/getItemFromStorage";
 import { UsersItem } from "@/components/UsersItem";
 import { Ionicons } from "@expo/vector-icons";
 import { primaryColor, secondaryColor } from "@/constants/colors";
-import { useAuth } from "@/components/AuthProviders";
+import { useAuth } from "@/Context/AuthProvider"
 import { useDispatch, useSelector } from "react-redux";
 import { RootType } from "@/store";
 import { setIsUsersRefresh } from "@/Slices/refreshUsers";

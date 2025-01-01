@@ -24,7 +24,7 @@ import { useForm, Controller } from "react-hook-form"; // Import React Hook Form
 import { getItemFromStorage } from "@/constants/getItemFromStorage";
 import * as Google from "expo-auth-session/providers/google";
 import { makeRedirectUri } from "expo-auth-session";
-import { useAuth } from "@/components/AuthProviders";
+import { useAuth } from "@/Context/AuthProvider"
 
 const Login = () => {
   const { isAuth }: any = useAuth();

@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import baseApi from "../api/baseApi";
 import notAuth from "@/constants/Auth/notAuth";
-import { useAuth } from "@/components/AuthProviders";
+import { useAuth } from "@/Context/AuthProvider"
 
 const usePost = <T,>(endPoint: string, body: object): any => {
   const notAuthenticated = notAuth();

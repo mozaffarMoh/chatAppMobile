@@ -58,6 +58,7 @@
     "i18next": "^24.0.2",
     "lodash": "^4.17.21",
     "lottie-react-native": "7.1.0",
+    "peerjs": "^1.5.4",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-hook-form": "^7.53.2",
@@ -79,7 +80,7 @@
     "react-native-screens": "~4.1.0",
     "react-native-video": "^6.8.2",
     "react-native-web": "~0.19.13",
-    "react-native-webview": "13.12.2",
+    "react-native-webview": "^13.12.2",
     "react-redux": "^9.2.0",
     "socket.io-client": "^4.8.1",
     "zod": "^3.23.8"

@@ -3,7 +3,7 @@ import { View, StyleSheet } from "react-native";
 import LottieView from "lottie-react-native"; // For enhanced animation
 import { secondaryColor } from "@/constants/colors"; // Make sure you import your color constants
 import { Redirect, useNavigation } from "expo-router";
-import { useAuth } from "@/components/AuthProviders";
+import { useAuth } from "@/Context/AuthProvider"
 
 const LoadingScreen = () => {
   const { isAuth }: any = useAuth();

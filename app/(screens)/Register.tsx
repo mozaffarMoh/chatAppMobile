@@ -24,7 +24,7 @@ import CustomSnackbar from "@/components/CustomSnackbar";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { registerSchema } from "@/constants/zodSchema/registerSchema";
-import { useAuth } from "@/components/AuthProviders";
+import { useAuth } from "@/Context/AuthProvider"
 
 const Register = () => {
   const { isAuth }: any = useAuth();

@@ -1,4 +1,4 @@
-import { useAuth } from "@/components/AuthProviders";
+import { useAuth } from "@/Context/AuthProvider"
 import { setIsReset } from "@/Slices/isReset";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";

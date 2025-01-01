@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebRTC Call</title>
+    <script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.4/dist/peerjs.min.js"></script>
+    <script src="https://cdn.socket.io/4.5.1/socket.io.min.js"></script>
+  </head>
+  <body>
+    <h1>WebRTC Call</h1>
+
+    <div id="call-section">
+      <button id="accept-call">Accept Call</button>
+      <button id="decline-call">Decline Call</button>
+    </div>
+
+    <div id="video-container">
+      <video id="local-video" autoplay muted></video>
+      <video id="remote-video" autoplay></video>
+    </div>
+
+    <script>
+      // Connect to the signaling server via Socket.io
+      const socket = io("https://chatappapi-2w5v.onrender.com"); // Replace with your Express server address
+
+      let localStream;
+      let remoteStream;
+      let peerConnection;
+      const peer = new Peer(undefined, {
+        host: "chatappapi-2w5v.onrender.com", // Replace with your host if needed
+        port: 3000,
+        path: "/peerjs",
+        secure: true,
+      });
+
+      const acceptCallButton = document.getElementById("accept-call");
+      const declineCallButton = document.getElementById("decline-call");
+      const localVideo = document.getElementById("local-video");
+      const remoteVideo = document.getElementById("remote-video");
+
+      // Get local media stream (video/audio)
+      async function getLocalMedia() {
+        try {
+          localStream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true,
+          });
+          localVideo.srcObject = localStream;
+        } catch (err) {
+          console.error("Error accessing media devices.", err);
+        }
+      }
+
+      // Initialize local media
+      getLocalMedia();
+
+      // Handle incoming call
+      socket.on("callUser", (callData) => {
+        console.log("receving a call...");
+
+        acceptCallButton.onclick = () => acceptCall(callData);
+        declineCallButton.onclick = () => declineCall(callData);
+      });
+
+      // Accept a call
+      function acceptCall(callData) {
+        console.log("accept the call...");
+        peerConnection = new RTCPeerConnection();
+        peerConnection.addStream(localStream);
+
+        // Handle remote stream
+        peerConnection.onaddstream = (event) => {
+          remoteStream = event.stream;
+          remoteVideo.srcObject = remoteStream;
+        };
+
+        // Respond with an answer to the caller
+        peerConnection.setRemoteDescription(
+          new RTCSessionDescription(callData.offer)
+        );
+        peerConnection.createAnswer().then((answer) => {
+          peerConnection.setLocalDescription(answer);
+          socket.emit("callAccepted", { answer, to: callData.from });
+        });
+      }
+
+      // Decline a call
+      function declineCall(callData) {
+        console.log("decline a call...");
+        socket.emit("leaveCall", { to: callData.from });
+      }
+
+      // Handle outgoing calls
+      function initiateCall(peerId) {
+        peerConnection = new RTCPeerConnection();
+        peerConnection.addStream(localStream);
+
+        peerConnection.onaddstream = (event) => {
+          remoteStream = event.stream;
+          remoteVideo.srcObject = remoteStream;
+        };
+
+        peerConnection.createOffer().then((offer) => {
+          peerConnection.setLocalDescription(offer);
+          socket.emit("callUser", { offer, to: peerId });
+        });
+      }
+
+      // Listen for incoming connection from peer
+      peer.on("call", (call) => {
+        console.log("Received call from: ", call.peer);
+        socket.emit("callUser", { from: call.peer, offer: call.offer });
+      });
+
+      // Listen for peer connection to be made
+      peer.on("open", (id) => {
+        console.log("My peer ID is: ", id);
+      });
+
+      // Signaling - listening for call answers
+      socket.on("answerCall", (answer) => {
+        peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+      });
+
+      socket.on("leaveCall", () => {
+        alert("Call declined.");
+        // Reset UI
+      });
+    </script>
+  </body>
+</html>

@@ -13,10 +13,12 @@ import { primaryColor } from "@/constants/colors";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Main from "./main";
 import { Slot, Stack } from "expo-router";
-import { AuthProvider } from "@/components/AuthProviders";
 import SingleChat from "./(screens)/SingleChat";
 import { Provider } from "react-redux";
 import store from "@/store";
+import { AuthProvider } from "@/Context/AuthProvider";
+import { MessagesCacheProvider } from "@/Context/MessagesProvider";
+import { UsersProvider } from "@/Context/UsersProvider";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -40,8 +42,10 @@ function RootLayout() {
     <Provider store={store}>
       <AuthProvider>
         <SQLiteProvider databaseName="chatApp.db">
-          <StatusBar style="dark" />
-          <Main />
+          <MessagesCacheProvider>
+            <StatusBar style="dark" />
+            <Main />
+          </MessagesCacheProvider>
         </SQLiteProvider>
       </AuthProvider>
     </Provider>
