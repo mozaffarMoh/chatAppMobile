@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "com.feras123.testlatest",
+    "name": "chatapp",
     "slug": "chatapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/favicon.png",
-    "scheme": "com.feras123.testlatest",
+    "scheme": "com.feras123.chatapp",
     "splash": {
       "image": "./assets/images/favicon.png",
       "resizeMode": "contain",
@@ -22,7 +22,7 @@
         "foregroundImage": "./assets/images/favicon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.feras123.testlatest",
+      "package": "com.feras123.chatapp",
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",

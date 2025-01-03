@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Platform, useWindowDimensions } from "react-native";
+import { Image, Platform, useWindowDimensions } from "react-native";
 import {
   View,
   StyleSheet,
@@ -24,7 +24,8 @@ import { useForm, Controller } from "react-hook-form"; // Import React Hook Form
 import { getItemFromStorage } from "@/constants/getItemFromStorage";
 import * as Google from "expo-auth-session/providers/google";
 import { makeRedirectUri } from "expo-auth-session";
-import { useAuth } from "@/Context/AuthProvider"
+import { useAuth } from "@/Context/AuthProvider";
+import { Ionicons } from "@expo/vector-icons";
 
 const Login = () => {
   const { isAuth }: any = useAuth();
@@ -103,6 +104,7 @@ const Login = () => {
     ,
     googleSuccessMessage,
   ] = usePost(endPoint.registerGoogle, gmailToken);
+
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: Platform.select({
       ios: "202948221783-slvgg9nuv7dl6103vgpop136eej0rnkf.apps.googleusercontent.com",
@@ -113,11 +115,10 @@ const Login = () => {
     }),
     //this for web :  202948221783-m98hb00hfk2d0v73bqrrev24f0ubui74.apps.googleusercontent.com
     redirectUri: makeRedirectUri({
-      scheme: "com.feras123.testlatest",
-      native:'android',
-      preferLocalhost:true
+      scheme: "com.feras123.chatapp",
+      native: "android",
+      //preferLocalhost:true
     }),
-
   });
 
   useEffect(() => {
@@ -228,6 +229,7 @@ const Login = () => {
                 ) : (
                   <Text style={styles.buttonGoogleText}>
                     {t("auth.loginWithGoogle")}
+                   <Image source={require('../../assets/images/google.png')}/>
                   </Text>
                 )}
               </TouchableOpacity>
