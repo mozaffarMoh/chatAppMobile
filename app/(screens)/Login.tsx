@@ -118,8 +118,6 @@ const Login = () => {
     redirectUri: makeRedirectUri({
       scheme: "com.feras123.chatapp",
       native: "android",
-      //path: "https://auth.expo.io/@feras123/chatapp",
-      //preferLocalhost:true
     }),
   });
 

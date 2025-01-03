@@ -55,8 +55,8 @@
           "color": "#0000ff",
           "defaultChannel": "default",
           "sounds": [
-            "./assets/sound.mp3",
-            "./assets/sound.mp3"
+            "./assets/sounds/receiveMessage.mp3",
+            "./assets/sounds/receiveMessage.mp3"
           ],
           "enableBackgroundRemoteNotifications": false
         }
