@@ -54,10 +54,6 @@
           "icon": "./assets/images/favicon.png",
           "color": "#0000ff",
           "defaultChannel": "default",
-          "sounds": [
-            "./assets/sounds/receiveMessage.mp3",
-            "./assets/sounds/receiveMessage.mp3"
-          ],
           "enableBackgroundRemoteNotifications": false
         }
       ],
