@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import { Text } from "react-native-paper";
 import { Socket, io } from "socket.io-client";
-import "react-native-get-random-values";
 import LottieView from "lottie-react-native";
 import Video from "react-native-video";
 import { Audio } from "expo-av";
@@ -20,7 +19,6 @@ import {
   stopReceiveCallSound,
   stopSendCallSound,
 } from "@/constants/soundsFiles";
-import Peer from "peerjs";
 import { WebView } from "react-native-webview";
 
 const CallSection = ({
@@ -69,12 +67,6 @@ const CallSection = ({
   }, []);
 
   const callUser = async () => {
-    try {
-      const peer = new RTCPeerConnection();
-      console.log("peer success  : ", peer);
-    } catch (err) {
-      console.log("peer error is : ", err);
-    }
     socketRef.current.emit("callUser", {
       userToCall: receiverId,
       voice: isAudioCall,
@@ -112,7 +104,7 @@ const CallSection = ({
     setCallTime({ minutes: 0, seconds: 0 });
 
     // Initialize PeerJS
-    const peer = new Peer("", {
+    /* const peer = new Peer("", {
       host: "chatappapi-2w5v.onrender.com",
       port: 3000,
       path: "/",
@@ -152,7 +144,7 @@ const CallSection = ({
     });
 
     // Store the peer connection
-    connectionRef.current = peer;
+    connectionRef.current = peer; */
   };
 
   useEffect(() => {
