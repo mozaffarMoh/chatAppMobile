@@ -27,9 +27,11 @@ import { setIsProfileUpdated } from "@/Slices/isProfileUpdated";
 import { useDispatch, useSelector } from "react-redux";
 import { setIsReset } from "@/Slices/isReset";
 import { RootType } from "@/store";
+import useCustomTheme from "@/custom-hooks/useCustomTheme";
 
 const MyAccount = () => {
   const navigation = useNavigation();
+  const { defaultBG, defaultTitle, isDark }: any = useCustomTheme();
   const { t }: any = useRTL();
   const dispatch = useDispatch();
   const isReset: any = useSelector((state: RootType) => state.isReset.value);
@@ -245,7 +247,7 @@ const MyAccount = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: defaultBG }]}>
       <CustomSnackbar
         visible={Boolean(errorMessage) || Boolean(errorMessageDeleteUser)}
         message={errorMessage || errorMessageDeleteUser}
@@ -265,7 +267,9 @@ const MyAccount = () => {
           <Image source={imageURI} style={styles.profilePhoto} />
         ) : (
           <View style={styles.placeholder}>
-            <Text style={styles.uploadText}>{t("buttons.uploadPhoto")}</Text>
+            <Text style={[styles.uploadText, { color: defaultTitle }]}>
+              {t("buttons.uploadPhoto")}
+            </Text>
           </View>
         )}
       </TouchableOpacity>
@@ -279,7 +283,9 @@ const MyAccount = () => {
         </TouchableOpacity>
       )}
       {/* Email */}
-      <Text style={styles.email}>{formData?.email}</Text>
+      <Text style={[styles.email, { color: defaultTitle }]}>
+        {formData?.email}
+      </Text>
       {/* Name Input */}
       {inputs.map((input: any) => (
         <View key={input.name} style={styles.inputWrapper}>
@@ -291,10 +297,11 @@ const MyAccount = () => {
                 <TextInput
                   style={[
                     styles.input,
+                    { color: defaultTitle, borderColor: defaultTitle },
                     errors[input.name] && styles.errorBorder, // Add red border if error
                   ]}
                   placeholder={input.placeholder}
-                  placeholderTextColor="#eeeeee"
+                  placeholderTextColor={"#aaa"}
                   keyboardType={input.keyboardType}
                   secureTextEntry={input.secureTextEntry || false}
                   value={value}
@@ -364,7 +371,6 @@ const MyAccount = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#312",
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
@@ -423,7 +429,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   uploadText: {
-    color: "#ffffff",
     fontWeight: "bold",
   },
   removeButton: {
@@ -431,7 +436,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   removeText: {
-    color: "#e63946",
+    color: "red",
     fontWeight: "bold",
   },
   email: {

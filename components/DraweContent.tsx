@@ -5,16 +5,25 @@ import {
   StyleSheet,
   Alert,
   Image,
+  I18nManager,
 } from "react-native";
-import { router, useNavigation } from "expo-router";
+import { router } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
+import { DrawerActions } from "@react-navigation/native";
 import { DrawerContentScrollView } from "@react-navigation/drawer";
 import { useTranslation } from "react-i18next";
 import { endPoint } from "@/api/endPoint";
 import { useGet } from "@/custom-hooks";
 import { ActivityIndicator } from "react-native-paper";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import useCustomTheme from "@/custom-hooks/useCustomTheme";
 
 export default function DrawerContent() {
-  const { t } = useTranslation();
+  const { defaultBG, defaultTitle } = useCustomTheme();
+  const { i18n, t } = useTranslation();
+  const navigation = useNavigation();
+  const isRTL = i18n.language === "ar";
+
   const [, logoutLoading, handleLogout, , errorMessageLogout] = useGet(
     endPoint.logout
   );
@@ -22,25 +31,50 @@ export default function DrawerContent() {
   const navigationItems = [
     { name: t("header.main"), route: "/" },
     { name: t("header.myAccount"), route: "/(screens)/MyAccount" },
+    { name: t("header.lang"), isLang: true },
     { name: t("header.logout") },
   ];
 
-  const handleNavigate = (path: any) => {
-    if (!path) {
-      Alert.alert(
-        t("header.logout"), // Alert title
-        t("alerts.confirmLogout"), // Alert message
-        [
-          { text: t("alerts.cancel"), style: "cancel" },
-          {
-            text: t("alerts.confirm"),
-            style: "destructive",
-            onPress: () => {
-              handleLogout(); // Add actual logout logic here
-            },
+  const handleLogoutAlert = () => {
+    Alert.alert(
+      t("header.logout"), // Alert title
+      t("alerts.confirmLogout"), // Alert message
+      [
+        { text: t("alerts.cancel"), style: "cancel" },
+        {
+          text: t("alerts.confirm"),
+          style: "destructive",
+          onPress: async () => {
+            await AsyncStorage.removeItem("activeTheme");
+            handleLogout(); // Add actual logout logic here
           },
-        ]
-      );
+        },
+      ]
+    );
+  };
+
+  const handelChangeLanguage = async (lang: string) => {
+    try {
+      await AsyncStorage.setItem("language", lang);
+      i18n.changeLanguage(lang);
+      navigation.dispatch(DrawerActions.closeDrawer());
+
+      I18nManager.allowRTL(true);
+      I18nManager.forceRTL(true);
+
+      /*    if (I18nManager.isRTL) {
+        await Updates.reloadAsync();
+      } */
+    } catch (error) {
+      console.error("Error changing language:", error);
+    }
+  };
+
+  /* Navigation  */
+  const handleNavigate = (path: any, isLang: boolean) => {
+    if (!path) {
+      let lang = isRTL ? "en" : "ar";
+      isLang ? handelChangeLanguage(lang) : handleLogoutAlert();
     } else {
       router.push(path);
     }
@@ -58,9 +92,9 @@ export default function DrawerContent() {
           <TouchableOpacity
             key={index}
             style={styles.navItem}
-            onPress={() => handleNavigate(item.route)}
+            onPress={() => handleNavigate(item.route, item?.isLang)}
           >
-            {!item?.route && logoutLoading ? (
+            {!item?.route && !item?.isLang && logoutLoading ? (
               <ActivityIndicator />
             ) : (
               <Text style={styles.navText}>{item.name}</Text>

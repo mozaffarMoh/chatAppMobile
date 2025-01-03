@@ -1,15 +1,17 @@
 import { primaryColor, secondaryColor } from "@/constants/colors";
+import useCustomTheme from "@/custom-hooks/useCustomTheme";
 import { router } from "expo-router";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export const UsersItem = ({ item, userId }: any) => {
+  const { defaultTitle, defaultBG,isDark } = useCustomTheme();
   let imageURL = item.profilePhoto
     ? { uri: item.profilePhoto }
     : require("@/assets/images/avatar.png");
 
   return (
     <TouchableOpacity
-      style={styles.itemContainer}
+      style={[styles.itemContainer, { backgroundColor: isDark ? '#000': '#ddd' }]}
       onPress={() =>
         router.push({
           pathname: "/(screens)/SingleChat",

@@ -25,6 +25,7 @@
     "main": "الرئيسية",
     "friendsList": "قائمة الأصدقاء",
     "myAccount": "حسابي",
+    "lang": "التبديل الى الانجليزية",
     "logout": "تسجيل الخروج"
   },
   "buttons": {
@@ -56,6 +57,7 @@
     "passwordMinLength": "يجب أن تحتوي كلمة المرور على 5 أحرف على الأقل."
   },
   "placeholder": {
+    "searchHere":"ابحث من هنا...",
     "chatInputPlaceholder": "اكتب رسالتك...",
     "updateMessage": "اكتب رسالتك الجديدة.."
   }

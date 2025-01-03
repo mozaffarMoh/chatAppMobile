@@ -26,6 +26,7 @@
     "main": "Main",
     "friendsList": "Friends List",
     "myAccount": "My Account",
+    "lang": "Change to arabic",
     "logout": "Logout"
   },
   "buttons": {
@@ -56,6 +57,7 @@
     "passwordMinLength": "Password must be at least 5 characters."
   },
   "placeholder": {
+    "searchHere":"Search here...",
     "chatInputPlaceholder": "Type your message...",
     "updateMessage": "Type your updated message..."
   }

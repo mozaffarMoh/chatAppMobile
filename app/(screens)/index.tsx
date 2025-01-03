@@ -5,7 +5,13 @@ import React, {
   useLayoutEffect,
   useCallback,
 } from "react";
-import { View, StyleSheet, FlatList, ActivityIndicator } from "react-native";
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+  useColorScheme,
+} from "react-native";
 import { Redirect, router, useFocusEffect, useNavigation } from "expo-router";
 import useRTL from "@/custom-hooks/useRTL";
 import { TextInput } from "react-native-paper";
@@ -16,19 +22,21 @@ import { getItemFromStorage } from "@/constants/getItemFromStorage";
 import { UsersItem } from "@/components/UsersItem";
 import { Ionicons } from "@expo/vector-icons";
 import { primaryColor, secondaryColor } from "@/constants/colors";
-import { useAuth } from "@/Context/AuthProvider"
+import { useAuth } from "@/Context/AuthProvider";
 import { useDispatch, useSelector } from "react-redux";
 import { RootType } from "@/store";
 import { setIsUsersRefresh } from "@/Slices/refreshUsers";
 import { setIsProfileUpdated } from "@/Slices/isProfileUpdated";
 import { setIsReset } from "@/Slices/isReset";
 import { setUsersSlice } from "@/Slices/usersSlice";
+import useCustomTheme from "@/custom-hooks/useCustomTheme";
 
 const Main = () => {
+  const { defaultTitle, defaultBG } = useCustomTheme();
   const dispatch = useDispatch();
   const { isAuth }: any = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const { t }: any = useRTL();
+  const { t, isRTL }: any = useRTL();
   const [myData, setMyData]: any = useState(null);
   const [userId, setUserId]: any = useState("");
   const [page, setPage]: any = useState(1);
@@ -127,11 +135,19 @@ const Main = () => {
     () => (
       <View style={styles.searchContainer}>
         <TextInput
-          placeholder="Search here..."
+          placeholder={t("placeholder.searchHere")}
           placeholderTextColor="#aaa"
           value={searchQuery}
           onChangeText={handleSearch}
-          style={styles.searchInput}
+          textColor={defaultTitle}
+          style={[
+            styles.searchInput,
+            {
+              textAlign: isRTL ? "right" : "left",
+              paddingRight: isRTL ? 35 : 0,
+              backgroundColor: defaultBG,
+            },
+          ]}
         />
         {filteredUsersLoading ? (
           <ActivityIndicator
@@ -152,14 +168,14 @@ const Main = () => {
         )}
       </View>
     ),
-    [searchQuery, filteredUsersLoading] // Only re-create the header when `searchQuery` changes
+    [searchQuery, filteredUsersLoading, defaultBG, isRTL] // Only re-create the header when `searchQuery` changes
   );
 
   const ListFooterComponent = () => {
     return loading ? (
       <ActivityIndicator
         size="small"
-        color="#fff"
+        color={defaultTitle}
         style={{ marginVertical: 10 }}
       />
     ) : (
@@ -186,7 +202,12 @@ const Main = () => {
         data={currentArray}
         renderItem={({ item }) => <UsersItem item={item} userId={userId} />}
         keyExtractor={(item: any) => item._id}
-        style={styles.flatList}
+        style={[
+          styles.flatList,
+          {
+            backgroundColor: defaultBG,
+          },
+        ]}
         ListHeaderComponent={ListHeaderComponent}
         onEndReached={handleLoadMore}
         ListFooterComponent={ListFooterComponent}
@@ -199,7 +220,6 @@ const Main = () => {
 const styles = StyleSheet.create({
   flatList: {
     flex: 1,
-    backgroundColor: "black", // Light background
     paddingHorizontal: 10,
   },
   searchContainer: {
@@ -207,12 +227,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   searchInput: {
-    backgroundColor: "#f0f0f0",
     borderRadius: 3,
     height: 40,
     paddingHorizontal: 15,
     fontSize: 16,
-    color: "#333",
   },
 });
 

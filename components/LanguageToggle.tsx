@@ -1,16 +1,30 @@
-import React from "react";
-import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
+import React, { useEffect } from "react";
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  I18nManager,
+} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
+import * as Updates from "expo-updates";
 
 const LanguageToggle = () => {
   const { i18n, t } = useTranslation();
   const isRTL = i18n.language === "ar";
-
+  
   const changeLanguage = async (lang: string) => {
     try {
       await AsyncStorage.setItem("language", lang);
       i18n.changeLanguage(lang);
+
+      I18nManager.allowRTL(true);
+      I18nManager.forceRTL(true);
+      
+   /*    if (I18nManager.isRTL) {
+        await Updates.reloadAsync();
+      } */
     } catch (error) {
       console.error("Error changing language:", error);
     }
@@ -44,7 +58,7 @@ const styles = StyleSheet.create({
   },
   switch: {
     marginTop: 15,
-    marginRight:10,
+    marginRight: 10,
     width: 70,
     height: 30,
     borderRadius: 20,
