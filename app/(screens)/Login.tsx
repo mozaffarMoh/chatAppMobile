@@ -8,7 +8,7 @@ import {
   ImageBackground,
   ScrollView,
 } from "react-native";
-import { ActivityIndicator, Text } from "react-native-paper";
+import { ActivityIndicator, Surface, Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LanguageToggle from "@/components/LanguageToggle";
 import { Redirect, router, Stack, useNavigation } from "expo-router";
@@ -107,16 +107,18 @@ const Login = () => {
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: Platform.select({
-      ios: "202948221783-slvgg9nuv7dl6103vgpop136eej0rnkf.apps.googleusercontent.com",
+      ios: "202948221783-m98hb00hfk2d0v73bqrrev24f0ubui74.apps.googleusercontent.com",
       android:
-        "202948221783-slvgg9nuv7dl6103vgpop136eej0rnkf.apps.googleusercontent.com",
+        "202948221783-m98hb00hfk2d0v73bqrrev24f0ubui74.apps.googleusercontent.com",
       default:
-        "202948221783-slvgg9nuv7dl6103vgpop136eej0rnkf.apps.googleusercontent.com",
+        "202948221783-m98hb00hfk2d0v73bqrrev24f0ubui74.apps.googleusercontent.com",
     }),
+    //this for android : 202948221783-slvgg9nuv7dl6103vgpop136eej0rnkf.apps.googleusercontent.com
     //this for web :  202948221783-m98hb00hfk2d0v73bqrrev24f0ubui74.apps.googleusercontent.com
     redirectUri: makeRedirectUri({
       scheme: "com.feras123.chatapp",
-      native: "android",
+      //native: "android",
+      //path: "https://auth.expo.io/@feras123/chatapp",
       //preferLocalhost:true
     }),
   });
@@ -227,10 +229,15 @@ const Login = () => {
                 {googleLoading ? (
                   <ActivityIndicator size="small" color="#aaa" />
                 ) : (
-                  <Text style={styles.buttonGoogleText}>
-                    {t("auth.loginWithGoogle")}
-                   <Image source={require('../../assets/images/google.png')}/>
-                  </Text>
+                  <View style={styles.googleLogin}>
+                    <Image
+                      source={require("../../assets/images/google.png")}
+                      style={styles.googleIcon}
+                    />
+                    <Text style={styles.buttonGoogleText}>
+                      {t("auth.loginWithGoogle")}
+                    </Text>
+                  </View>
                 )}
               </TouchableOpacity>
 
@@ -333,6 +340,15 @@ const styles = StyleSheet.create({
   signupLink: {
     color: "#4CAF50",
     fontWeight: "bold",
+  },
+  googleLogin: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  googleIcon: {
+    width: 30,
+    height: 30,
   },
 });
 
