@@ -107,9 +107,9 @@ const Login = () => {
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: Platform.select({
-      ios: "202948221783-m98hb00hfk2d0v73bqrrev24f0ubui74.apps.googleusercontent.com",
+      ios: "202948221783-slvgg9nuv7dl6103vgpop136eej0rnkf.apps.googleusercontent.com",
       android:
-        "202948221783-m98hb00hfk2d0v73bqrrev24f0ubui74.apps.googleusercontent.com",
+        "202948221783-slvgg9nuv7dl6103vgpop136eej0rnkf.apps.googleusercontent.com",
       default:
         "202948221783-m98hb00hfk2d0v73bqrrev24f0ubui74.apps.googleusercontent.com",
     }),
@@ -117,7 +117,7 @@ const Login = () => {
     //this for web :  202948221783-m98hb00hfk2d0v73bqrrev24f0ubui74.apps.googleusercontent.com
     redirectUri: makeRedirectUri({
       scheme: "com.feras123.chatapp",
-      //native: "android",
+      native: "android",
       //path: "https://auth.expo.io/@feras123/chatapp",
       //preferLocalhost:true
     }),
