@@ -19,7 +19,6 @@ import {
   stopReceiveCallSound,
   stopSendCallSound,
 } from "@/constants/soundsFiles";
-import { WebView } from "react-native-webview";
 
 const CallSection = ({
   t,
