@@ -10,18 +10,14 @@ const useCustomTheme = () => {
   const [themeFromStorage, setThemeFromStorage] = useState("");
   const dispatch = useDispatch();
 
-  console.log(themeFromStorage, activeTheme);
-
   useEffect(() => {
     if (!themeFromStorage) {
-      console.log("got from storage");
       getItemFromStorage("activeTheme", setThemeFromStorage);
     }
   }, []);
 
   useEffect(() => {
     if (themeFromStorage && !activeTheme) {
-      console.log("set storage to redux");
       dispatch(setActiveTheme(themeFromStorage));
     }
   }, [themeFromStorage]);

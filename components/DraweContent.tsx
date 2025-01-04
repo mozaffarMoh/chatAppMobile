@@ -84,7 +84,7 @@ export default function DrawerContent() {
     <DrawerContentScrollView>
       <View style={styles.container}>
         <Image
-          source={require("../assets/images/favicon.png")} // Adjust the path
+          source={require("../assets/images/icon.png")} // Adjust the path
           style={styles.image}
           resizeMode="contain"
         />
