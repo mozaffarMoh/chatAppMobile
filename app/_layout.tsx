@@ -10,6 +10,8 @@ import { Provider } from "react-redux";
 import store from "@/store";
 import { AuthProvider } from "@/Context/AuthProvider";
 import { MessagesCacheProvider } from "@/Context/MessagesProvider";
+import { SocketProvider } from "@/Context/SocketRefProvider";
+import { PushTokensProvider } from "@/Context/pushTokensProvider";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -33,9 +35,13 @@ function RootLayout() {
     <Provider store={store}>
       <AuthProvider>
         <SQLiteProvider databaseName="chatApp.db">
-          <MessagesCacheProvider>
-            <Main />
-          </MessagesCacheProvider>
+          <SocketProvider>
+            <PushTokensProvider>
+              <MessagesCacheProvider>
+                <Main />
+              </MessagesCacheProvider>
+            </PushTokensProvider>
+          </SocketProvider>
         </SQLiteProvider>
       </AuthProvider>
     </Provider>

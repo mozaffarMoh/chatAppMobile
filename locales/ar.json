@@ -41,7 +41,11 @@
     "successRegister": "اهلا وسهلا بك , تم انشاء الحساب بنجاح",
     "successLogin": "اهلا بك مجددا تم تسجيل الدخول بنجاح",
     "successUpdateProfile": "تم التعديل بنجاح",
-    "hello": "مرحبا, ابدا بالدردشة!"
+    "hello": "مرحبا, ابدا بالدردشة!",
+    "sendToYou": "!أرسل إليك رسالة",
+    "receiveVoice": "رسالة صوتية",
+    "receiveMessageTitle": "لقد جاءتك رسالة جديدة",
+    "receiveMessageSubTitle": "تفقد محتوى الايميل"
   },
   "alerts": {
     "confirmLogout": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
@@ -57,7 +61,7 @@
     "passwordMinLength": "يجب أن تحتوي كلمة المرور على 5 أحرف على الأقل."
   },
   "placeholder": {
-    "searchHere":"ابحث من هنا...",
+    "searchHere": "ابحث من هنا...",
     "chatInputPlaceholder": "اكتب رسالتك...",
     "updateMessage": "اكتب رسالتك الجديدة.."
   }

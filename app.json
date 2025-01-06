@@ -18,10 +18,6 @@
       "simulator": true
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon.png",
-        "backgroundColor": "#ffffff"
-      },
       "package": "com.feras123.chatapp",
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",

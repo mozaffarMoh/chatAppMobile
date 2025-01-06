@@ -13,4 +13,5 @@ export const endPoint = {
     sendMessage: 'messages/send-message',
     editMessage: '/messages/edit-message/',
     deleteMessage: '/messages/delete-message/',
+    pushNotification: '/push-notification'
 }

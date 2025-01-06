@@ -3,7 +3,7 @@ import { ChatInputFooter } from "@/components/ChatInputFooter";
 import SingleChatItem from "@/components/SingleChatItem";
 import { primaryColor, secondaryColor, thirdColor } from "@/constants/colors";
 import { getItemFromStorage } from "@/constants/getItemFromStorage";
-import { useGet, useSQList } from "@/custom-hooks";
+import { useGet } from "@/custom-hooks";
 import useRTL from "@/custom-hooks/useRTL";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -15,9 +15,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
-  Modal,
   StyleSheet,
   Text,
   View,
@@ -29,26 +27,26 @@ import {
   State,
 } from "react-native-gesture-handler";
 import MessageUpdate from "@/components/MessageUpdate";
-import { chatMessagesExample } from "@/constants/chatMessagesExample";
 import CallSection from "@/components/CallSection";
-import { io } from "socket.io-client";
 import { setIsUsersRefresh } from "@/Slices/refreshUsers";
 import { useDispatch } from "react-redux";
-import { Audio } from "expo-av";
-import { Camera } from "expo-camera";
 import { playReceiveMessageSound } from "@/constants/soundsFiles";
 import { useSelector } from "react-redux";
 import { RootType } from "@/store";
-import WebView from "react-native-webview";
 import { useMessagesCache } from "@/Context/MessagesProvider";
+import { useSocket } from "@/Context/SocketRefProvider";
+import useSocketMonitor from "@/custom-hooks/useSocketMonitor";
+import { io, Socket } from "socket.io-client";
 
 const SingleChat = () => {
   const { t, direction }: any = useRTL();
+  const [myData, setMyData]: any = useState(null);
+  const { socketRef, isMessageReceived, setIsMessageReceived } =
+    useSocketMonitor();
   const { messagesCache, setMessagesCache }: any = useMessagesCache();
   const navigation = useNavigation();
   const dispatch = useDispatch();
   let params: any = useLocalSearchParams();
-  const [myData, setMyData]: any = useState(null);
   const [page, setPage]: any = useState(2);
   const [isFirstRender, setIsFirstRender]: any = useState(false);
   const [isOnline, setIsOnline] = useState<boolean | null>(null);
@@ -57,7 +55,6 @@ const SingleChat = () => {
   const [isAudioCall, setIsAudioCall]: any = useState(false);
   const [isVideoCall, setIsVideoCall]: any = useState(false);
   const [isCallStart, setIsCallStart] = useState<boolean>(false);
-  const socketRef = useRef<any>(null);
   const flatListRef = useRef<FlatList>(null); // Ref for FlatList
   const [name, setName] = useState<string>("");
   const [caller, setCaller] = useState<string>("");
@@ -66,7 +63,6 @@ const SingleChat = () => {
   const [isReceiveCall, setIsReceiveCall] = useState<boolean>(false);
   const [receiverImage, setReceiverImage]: any = useState(null);
   const [receiverId, setReceiverId]: any = useState("");
-  const [isMessageReceived, setIsMessageReceived] = useState<boolean>(false);
   const [isFirstGetMessages, setIsFirstGetMessages] = useState(false); // Tracks if we've scrolled initially
   const [messageToUpdate, setMessageToUpdate]: any = useState({
     _id: "",
@@ -218,9 +214,8 @@ const SingleChat = () => {
   /* if user receive a message recall the messages */
   useEffect(() => {
     if (isMessageReceived) {
-      playReceiveMessageSound();
       getMessages();
-      dispatch(setIsUsersRefresh(true));
+      setIsMessageReceived(false);
     }
   }, [isMessageReceived]);
 
@@ -232,38 +227,6 @@ const SingleChat = () => {
     }
   };
 
-  // Socket Code
-  useEffect(() => {
-    const socket = io("https://chatappapi-2w5v.onrender.com");
-    socketRef.current = socket;
-
-    const handleReceiveMessage = (messageReceiverID: string) => {
-      if (myData?._id == messageReceiverID) {
-        console.log("message is received");
-        setIsMessageReceived(true);
-      }
-    };
-
-    const handleReceiveCall = async (data: any) => {
-      if (myData?._id == data.userToCall) {
-        setIsReceiveCall(true);
-        setIsVideoCall(data.video);
-        setIsAudioCall(data.voice);
-        setCaller(data.from);
-        setCallerSignal(data.signal);
-        setName(data.name);
-      }
-    };
-
-    socket.on("receiveMessage", handleReceiveMessage);
-    socket.on("callUser", handleReceiveCall);
-
-    return () => {
-      socket.off("receiveMessage", handleReceiveMessage);
-      socket.disconnect();
-    };
-  }, []);
-
   /* Search for receiver image in redux */
   useFocusEffect(
     useCallback(() => {
@@ -274,7 +237,7 @@ const SingleChat = () => {
       });
     }, [isFirstRender])
   );
-  
+
   /* refersh users and scroll to bottom when first success */
   useEffect(() => {
     if (success) {
@@ -384,6 +347,7 @@ const SingleChat = () => {
           {...params}
           setReadyToGetMessages={setReadyToGetMessages}
           socketRef={socketRef}
+          myData={myData}
         />
 
         <MessageUpdate

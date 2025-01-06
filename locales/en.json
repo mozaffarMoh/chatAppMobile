@@ -41,7 +41,11 @@
     "cantChangePassword": "You can't change your password when using a Gmail account",
     "successRegister": "Register success, welcome!",
     "successLogin": "Login Success, welcome!",
-    "hello": "Hello, let’s start"
+    "hello": "Hello, let’s start",
+    "sendToYou": "sent a message!",
+    "receiveVoice": "Voice message",
+    "receiveMessageTitle": "You have a new message",
+    "receiveMessageSubTitle": "Check your email"
   },
   "alerts": {
     "confirmLogout": "Are you sure you want to logout ?",
@@ -57,7 +61,7 @@
     "passwordMinLength": "Password must be at least 5 characters."
   },
   "placeholder": {
-    "searchHere":"Search here...",
+    "searchHere": "Search here...",
     "chatInputPlaceholder": "Type your message...",
     "updateMessage": "Type your updated message..."
   }

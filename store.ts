@@ -17,7 +17,7 @@ const store = configureStore({
         isProfileUpdated: isProfileUpdatedReducer,
         isReset: isResetReducer,
         usersSlice: usersSliceReducer,
-        activeTheme: ActiveThemeReducer
+        activeTheme: ActiveThemeReducer,
     }
 })
 

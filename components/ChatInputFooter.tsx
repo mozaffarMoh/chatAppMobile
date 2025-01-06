@@ -18,6 +18,11 @@ import { Audio } from "expo-av";
 import { playSendMessageSound } from "@/constants/soundsFiles";
 import RecordingAudio from "./RecordingAudio";
 import EmojiModal from "./EmojiModal";
+import {
+  scheduleAndCancel,
+  sendPushNotification,
+} from "@/constants/notifications";
+import { usePushTokens } from "@/Context/pushTokensProvider";
 
 export const ChatInputFooter = ({
   direction,
@@ -26,7 +31,9 @@ export const ChatInputFooter = ({
   receiverId,
   setReadyToGetMessages,
   socketRef,
+  myData,
 }: any) => {
+  const { pushTokens }: any = usePushTokens();
   const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
   const [openRecordingModal, setOpenRecordingModal] = useState(false);
   const [message, setMessage] = useState("");
@@ -41,10 +48,26 @@ export const ChatInputFooter = ({
     body
   );
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (message) {
       playSendMessageSound();
-      socketRef.current.emit("sendMessage", receiverId);
+      const receiverToken = pushTokens?.[receiverId];
+
+      if (receiverToken) {
+        // Include the receiver's token in the message
+        const pushMessage = {
+          to: receiverToken, // The token determines the receiving device
+          sound: "default",
+          title: `${myData?.username} ${t("messages.sendToYou")}`,
+          body: isAudio ? t("messages.receiveVoice") : message,
+          badge: 3,
+        };
+
+        // Send the push notification
+        await sendPushNotification(pushMessage);
+      }
+
+      socketRef?.current?.emit("sendMessage", receiverId);
       sendMessagePost();
       setMessage("");
       setDuration(0);

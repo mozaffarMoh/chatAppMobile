@@ -30,11 +30,15 @@ import { setIsProfileUpdated } from "@/Slices/isProfileUpdated";
 import { setIsReset } from "@/Slices/isReset";
 import { setUsersSlice } from "@/Slices/usersSlice";
 import useCustomTheme from "@/custom-hooks/useCustomTheme";
+import { registerForPushNotificationsAsync } from "@/constants/notifications";
+import baseApi from "@/api/baseApi";
+import { usePushTokens } from "@/Context/pushTokensProvider";
 
 const Main = () => {
   const { defaultTitle, defaultBG } = useCustomTheme();
   const dispatch = useDispatch();
   const { isAuth }: any = useAuth();
+  const { pushTokens, setPushTokens }: any = usePushTokens();
   const [searchQuery, setSearchQuery] = useState("");
   const { t, isRTL }: any = useRTL();
   const [myData, setMyData]: any = useState(null);
@@ -123,6 +127,24 @@ const Main = () => {
       });
 
       dispatch(setUsersSlice(usersForStoreInRedux));
+    }
+
+    if (userId && !pushTokens?.[userId]) {
+      registerForPushNotificationsAsync()
+        .then(async (token: any) => {
+          await baseApi
+            .post(endPoint.pushNotification, {
+              receiverId: userId,
+              pushToken: token,
+            })
+            .then((res: any) => {
+              setPushTokens(res?.data?.data);
+            })
+            .catch((err: any) => {
+              console.log("error in got tokens :", err);
+            });
+        })
+        .catch((error: any) => console.error("Failed to get token", error));
     }
   }, [users, myData, userId]);
 
