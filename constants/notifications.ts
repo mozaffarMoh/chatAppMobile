@@ -3,17 +3,20 @@ import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 
-Notifications.setNotificationHandler({
-  handleNotification: async (notification: any) => {
+// In your notifications file
+export function setNotificationHandler() {
+  Notifications.setNotificationHandler({
+    handleNotification: async (notification: any) => {
+      return {
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+        badge: notification.data?.badge || 0,
+      };
+    },
+  });
+}
 
-    return {
-      shouldShowAlert: true,
-      shouldPlaySound: true,
-      shouldSetBadge: true,
-      badge: notification.data?.badge || 0,
-    }
-  },
-});
 
 /* show Error message */
 function handleRegistrationError(errorMessage: string) {

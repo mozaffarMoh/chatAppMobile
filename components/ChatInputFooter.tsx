@@ -23,6 +23,7 @@ import {
   sendPushNotification,
 } from "@/constants/notifications";
 import { usePushTokens } from "@/Context/pushTokensProvider";
+import TokensModal from "./Tokens";
 
 export const ChatInputFooter = ({
   direction,
@@ -35,6 +36,7 @@ export const ChatInputFooter = ({
 }: any) => {
   const { pushTokens }: any = usePushTokens();
   const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
+  const [isTokensModalVisible, setIsTokensModalVisible] = useState(false);
   const [openRecordingModal, setOpenRecordingModal] = useState(false);
   const [message, setMessage] = useState("");
   const [duration, setDuration] = useState(0);
@@ -47,6 +49,7 @@ export const ChatInputFooter = ({
     `${endPoint.sendMessage}?userId=${userId}&receiverId=${receiverId}`,
     body
   );
+  console.log(pushTokens?.[receiverId]);
 
   const handleSendMessage = async () => {
     if (message) {
@@ -116,7 +119,7 @@ export const ChatInputFooter = ({
       />
       <TouchableOpacity
         style={{ marginLeft: !isRTL ? 7 : 0, marginRight: isRTL ? 7 : 0 }}
-        onPress={() => setOpenRecordingModal(true)}
+        onPress={() => setIsTokensModalVisible(true)}
       >
         <Ionicons name="mic" size={30} color={thirdColor} />
       </TouchableOpacity>
@@ -132,6 +135,12 @@ export const ChatInputFooter = ({
         isVisible={isEmojiPickerVisible}
         handleCloseModal={() => setIsEmojiPickerVisible(false)}
         onSelect={handleEmojiSelected}
+      />
+
+      <TokensModal
+        isVisible={isTokensModalVisible}
+        handleCloseModal={() => setIsTokensModalVisible(false)}
+        tokens={pushTokens}
       />
 
       <RecordingAudio

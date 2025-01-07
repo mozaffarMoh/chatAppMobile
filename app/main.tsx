@@ -12,30 +12,22 @@ import Drawer from "expo-router/drawer";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import {
-  scheduleAndCancel,
-  sendPushNotification,
-} from "@/constants/notifications";
+import { setNotificationHandler } from "@/constants/notifications";
 import { useTranslation } from "react-i18next";
 import { playReceiveMessageSound } from "@/constants/soundsFiles";
 import { useDispatch } from "react-redux";
 import { setIsUsersRefresh } from "@/Slices/refreshUsers";
+import * as Notifications from "expo-notifications";
 
 const Main = () => {
-  const { t } = useTranslation();
-  const { defaultTitle, defaultBG, isDark } = useCustomTheme();
-  const { isAuth }: any = useAuth();
-
   const dispatch = useDispatch();
-  const { socketRef, isMessageReceived, setIsMessageReceived } =
-    useSocketMonitor();
-  let message = {
-    sound: "default",
-    title: t("messages.receiveMessageTitle"),
-    body: t("messages.receiveMessageSubTitle"),
-    badge: 3,
-    data: { someData: "goes here" },
-  };
+  const { isAuth }: any = useAuth();
+  const { defaultTitle, defaultBG, isDark } = useCustomTheme();
+  const { isMessageReceived, setIsMessageReceived } = useSocketMonitor();
+
+  useEffect(() => {
+    setNotificationHandler(); // This will set the notification handler
+  }, []);
 
   useEffect(() => {
     if (isMessageReceived) {
@@ -46,6 +38,17 @@ const Main = () => {
       dispatch(setIsUsersRefresh(true));
     }
   }, [isMessageReceived]);
+
+  // Listen for notifications
+  useEffect(() => {
+    const subscription = Notifications.addNotificationReceivedListener(
+      (notification) => {
+        console.log("Notification received:", notification);
+      }
+    );
+
+    return () => subscription.remove();
+  }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
