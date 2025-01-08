@@ -60,12 +60,12 @@ export default function DrawerContent() {
       i18n.changeLanguage(lang);
       navigation.dispatch(DrawerActions.closeDrawer());
 
-      I18nManager.allowRTL(true);
+/*       I18nManager.allowRTL(true);
       I18nManager.forceRTL(true);
 
       if (I18nManager.isRTL) {
         await Updates.reloadAsync();
-      }
+      } */
     } catch (error) {
       console.error("Error changing language:", error);
     }
