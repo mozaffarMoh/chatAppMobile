@@ -106,8 +106,8 @@
       "typedRoutes": true
     },
     "extra": {
-      "supportsRTL": false,
-      "forcesRTL": false,
+      "supportsRTL": true,
+      "forcesRTL": true,
       "router": {
         "origin": false
       },

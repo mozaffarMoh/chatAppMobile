@@ -17,6 +17,7 @@ import { useGet } from "@/custom-hooks";
 import { ActivityIndicator } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import useCustomTheme from "@/custom-hooks/useCustomTheme";
+import * as Updates from "expo-updates";
 
 export default function DrawerContent() {
   const { defaultBG, defaultTitle } = useCustomTheme();
@@ -62,9 +63,9 @@ export default function DrawerContent() {
       I18nManager.allowRTL(true);
       I18nManager.forceRTL(true);
 
-      /*    if (I18nManager.isRTL) {
+      if (I18nManager.isRTL) {
         await Updates.reloadAsync();
-      } */
+      }
     } catch (error) {
       console.error("Error changing language:", error);
     }

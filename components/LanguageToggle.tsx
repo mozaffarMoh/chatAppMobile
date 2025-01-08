@@ -13,7 +13,7 @@ import * as Updates from "expo-updates";
 const LanguageToggle = () => {
   const { i18n, t } = useTranslation();
   const isRTL = i18n.language === "ar";
-  
+
   const changeLanguage = async (lang: string) => {
     try {
       await AsyncStorage.setItem("language", lang);
@@ -21,10 +21,10 @@ const LanguageToggle = () => {
 
       I18nManager.allowRTL(true);
       I18nManager.forceRTL(true);
-      
-   /*    if (I18nManager.isRTL) {
+
+      if (I18nManager.isRTL) {
         await Updates.reloadAsync();
-      } */
+      }
     } catch (error) {
       console.error("Error changing language:", error);
     }
