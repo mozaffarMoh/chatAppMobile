@@ -18,8 +18,9 @@ const LanguageToggle = () => {
     try {
       await AsyncStorage.setItem("language", lang);
       i18n.changeLanguage(lang);
-
-/*       I18nManager.allowRTL(true);
+      await Updates.reloadAsync();
+      
+      /*       I18nManager.allowRTL(true);
       I18nManager.forceRTL(true);
 
       if (I18nManager.isRTL) {
