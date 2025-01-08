@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "96955534710",
+    "firebase_url": "https://test-e42b5-default-rtdb.firebaseio.com",
+    "project_id": "test-e42b5",
+    "storage_bucket": "test-e42b5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:96955534710:android:68457e39c466f79fd4be57",
+        "android_client_info": {
+          "package_name": "com.feras123.chatapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCz5n-SrqDytGrP5aw0b5xwcUUrGog_tx8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

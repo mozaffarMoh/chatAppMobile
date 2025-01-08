@@ -12,12 +12,22 @@ import Drawer from "expo-router/drawer";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { setNotificationHandler } from "@/constants/notifications";
 import { useTranslation } from "react-i18next";
 import { playReceiveMessageSound } from "@/constants/soundsFiles";
 import { useDispatch } from "react-redux";
 import { setIsUsersRefresh } from "@/Slices/refreshUsers";
 import * as Notifications from "expo-notifications";
+
+Notifications.setNotificationHandler({
+  handleNotification: async (notification: any) => {
+    return {
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      badge: notification.data?.badge || 0,
+    };
+  },
+});
 
 const Main = () => {
   const dispatch = useDispatch();
@@ -26,14 +36,8 @@ const Main = () => {
   const { isMessageReceived, setIsMessageReceived } = useSocketMonitor();
 
   useEffect(() => {
-    setNotificationHandler(); // This will set the notification handler
-  }, []);
-
-  useEffect(() => {
     if (isMessageReceived) {
       console.log("receveid success from main");
-      playReceiveMessageSound();
-      //scheduleAndCancel(message);      //local notification
       setIsMessageReceived(false);
       dispatch(setIsUsersRefresh(true));
     }

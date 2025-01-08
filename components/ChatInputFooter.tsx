@@ -49,7 +49,6 @@ export const ChatInputFooter = ({
     `${endPoint.sendMessage}?userId=${userId}&receiverId=${receiverId}`,
     body
   );
-  console.log(pushTokens?.[receiverId]);
 
   const handleSendMessage = async () => {
     if (message) {
@@ -68,6 +67,11 @@ export const ChatInputFooter = ({
 
         // Send the push notification
         await sendPushNotification(pushMessage);
+      } else {
+        scheduleAndCancel({
+          sound: "default",
+          title: "المستقبل غير موجود",
+        });
       }
 
       socketRef?.current?.emit("sendMessage", receiverId);
@@ -119,7 +123,7 @@ export const ChatInputFooter = ({
       />
       <TouchableOpacity
         style={{ marginLeft: !isRTL ? 7 : 0, marginRight: isRTL ? 7 : 0 }}
-        onPress={() => setIsTokensModalVisible(true)}
+        onPress={() => setOpenRecordingModal(true)}
       >
         <Ionicons name="mic" size={30} color={thirdColor} />
       </TouchableOpacity>

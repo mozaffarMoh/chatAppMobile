@@ -19,6 +19,7 @@
     },
     "android": {
       "package": "com.feras123.chatapp",
+      "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
@@ -50,6 +51,9 @@
           "icon": "./assets/images/icon.png",
           "color": "#0000ff",
           "defaultChannel": "default",
+          "sounds": [
+            "./assets/sounds/receiveMessage.mp3"
+          ],
           "enableBackgroundRemoteNotifications": false
         }
       ],

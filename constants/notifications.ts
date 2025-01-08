@@ -3,20 +3,6 @@ import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 
-// In your notifications file
-export function setNotificationHandler() {
-  Notifications.setNotificationHandler({
-    handleNotification: async (notification: any) => {
-      return {
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: true,
-        badge: notification.data?.badge || 0,
-      };
-    },
-  });
-}
-
 
 /* show Error message */
 function handleRegistrationError(errorMessage: string) {
@@ -89,12 +75,6 @@ export async function sendPushNotification(messageContent: any) {
 
 /* This is just for add local notification */
 export async function scheduleAndCancel(messageContent: any) {
-  const triggerDetails: any = {
-    type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-    seconds: 2, // Notification will trigger after 60 seconds
-    repeats: false, // Set to false to prevent it from repeating
-  }
-
   try {
     // Schedule the notification
     const identifier = await Notifications.scheduleNotificationAsync({
@@ -102,7 +82,6 @@ export async function scheduleAndCancel(messageContent: any) {
       trigger: null
     });
 
-    console.log('Notification scheduled. Identifier:', identifier);
 
     // Optionally, cancel the scheduled notification immediately
     await Notifications.cancelScheduledNotificationAsync(identifier);

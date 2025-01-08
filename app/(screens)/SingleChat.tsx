@@ -214,8 +214,9 @@ const SingleChat = () => {
   /* if user receive a message recall the messages */
   useEffect(() => {
     if (isMessageReceived) {
-      getMessages();
+      playReceiveMessageSound();
       setIsMessageReceived(false);
+      getMessages();
     }
   }, [isMessageReceived]);
 
